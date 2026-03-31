@@ -1,0 +1,79 @@
+/* DocumentManagement.module.css */
+
+.documentManagement {
+  padding: 24px 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 20px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.tableWrapper {
+  padding: 0 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.detailsContent {
+  padding: 16px;
+}
+
+.detailItem {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detailItem:last-child {
+  border-bottom: none;
+}
+
+.detailLabel {
+  font-weight: 600;
+  color: #666;
+  min-width: 140px;
+}
+
+.detailItem span:last-child {
+  color: #333;
+  flex: 1;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .header h1 {
+    font-size: 18px;
+  }
+
+  .tableWrapper {
+    padding: 12px;
+  }
+
+  .detailItem {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detailLabel {
+    min-width: auto;
+  }
+}
