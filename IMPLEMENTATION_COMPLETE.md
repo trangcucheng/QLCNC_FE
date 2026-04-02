@@ -348,7 +348,7 @@ QLCNC_FE/
 ### Environment Variables
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:6061
-NEXT_PUBLIC_CHATBOT_API=https://chatbot.justtuananh.io.vn
+NEXT_PUBLIC_CHATBOT_API=http://103.161.17.191:8001
 ```
 
 ### Redux Store

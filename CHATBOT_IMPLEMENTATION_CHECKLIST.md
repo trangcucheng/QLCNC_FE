@@ -22,7 +22,7 @@ yarn install
 Check `.env.local`:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:6061
-NEXT_PUBLIC_CHATBOT_API=https://chatbot.justtuananh.io.vn
+NEXT_PUBLIC_CHATBOT_API=http://103.161.17.191:8001
 ```
 
 Update `NEXT_PUBLIC_CHATBOT_API` if needed.
@@ -195,7 +195,7 @@ npm run dev
 - [ ] Open DevTools > Network tab
 - [ ] Send message in ChatWidget
 - [ ] Filter requests to find POST to chatbot API
-- [ ] Verify URL: `https://chatbot.justtuananh.io.vn/chatbot`
+- [ ] Verify URL: `http://103.161.17.191:8001/chatbot`
 - [ ] Check request payload: `{ question: "...", stream: true }`
 - [ ] Check response: should have `answer` or `content` field
 
@@ -296,7 +296,7 @@ npm start
 ```env
 # .env.local
 NEXT_PUBLIC_API_URL=http://localhost:6061           # Or your backend URL
-NEXT_PUBLIC_CHATBOT_API=https://chatbot.justtuananh.io.vn  # Or your chatbot URL
+NEXT_PUBLIC_CHATBOT_API=http://103.161.17.191:8001  # Or your chatbot URL
 ```
 
 ### Redux Store Location

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // ===== Axios instance cho Chatbot API =====
 const ChatbotAPI = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_CHATBOT_API || 'https://chatbot.justtuananh.io.vn',
+  baseURL: process.env.NEXT_PUBLIC_CHATBOT_API || 'http://103.161.17.191:8001',
   timeout: 30000,
 });
 
@@ -39,8 +39,8 @@ export const validateDocumentData = (data, isUpdate = false) => {
       if (data.file.type !== 'application/pdf') {
         errors.push('Chỉ chấp nhận tệp PDF');
       }
-      if (data.file.size > 10 * 1024 * 1024) {
-        errors.push('Kích thước tệp không vượt quá 10MB');
+      if (data.file.size > 50 * 1024 * 1024) {
+        errors.push('Kích thước tệp không vượt quá 50MB');
       }
     }
   }

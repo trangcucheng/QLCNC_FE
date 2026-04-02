@@ -31,7 +31,7 @@ Kiểm tra `.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:6061
-NEXT_PUBLIC_CHATBOT_API=https://chatbot.justtuananh.io.vn
+NEXT_PUBLIC_CHATBOT_API=http://103.161.17.191:8001
 ```
 
 Cập nhật URL theo môi trường của bạn.
@@ -105,7 +105,7 @@ src/
 
 ### Chatbot Documents API
 
-Base URL: `https://chatbot.justtuananh.io.vn`
+Base URL: `http://103.161.17.191:8001`
 
 - `GET /documents` - Lấy danh sách tài liệu
 - `POST /documents` - Tạo tài liệu (multipart/form-data)

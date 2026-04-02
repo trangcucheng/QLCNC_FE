@@ -16,6 +16,9 @@ import {
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
+  ChatIcon,
+  DocsIcon,
+  FileIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 
@@ -27,70 +30,117 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  // US01, US12 - Dashboard & Tổng quan
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-  },
-  {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
-  },
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
+    subItems: [{ name: "Tổng quan", path: "/admin/dashboard", pro: false }],
   },
 
+  // US03 - Tìm kiếm thông tin
   {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+    icon: <GridIcon />,
+    name: "Tìm kiếm",
+    path: "/admin/tim-kiem",
   },
+
+  // US04, US14, US15 - Quản lý hồ sơ đối tượng
   {
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  },
-  {
-    name: "Pages",
-    icon: <PageIcon />,
+    name: "Quản lý Đối tượng",
+    icon: <UserCircleIcon />,
     subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
+      { name: "Danh sách", path: "/admin/doi-tuong", pro: false },
+      { name: "Thêm mới", path: "/admin/doi-tuong/them-moi", pro: false },
+    ],
+  },
+
+  // US05, US09 - Quản lý hồ sơ vụ việc
+  {
+    name: "Quản lý Vụ việc",
+    icon: <ListIcon />,
+    subItems: [
+      { name: "Danh sách", path: "/admin/vu-viec", pro: false },
+      { name: "Thêm mới", path: "/admin/vu-viec/them-moi", pro: false },
+    ],
+  },
+
+  // US06 - Quản lý tài liệu & chứng cứ
+  {
+    name: "Tài liệu & Chứng cứ",
+    icon: <FileIcon />,
+    subItems: [
+      { name: "Kho tài liệu", path: "/admin/tai-lieu", pro: false },
+      { name: "Tải lên", path: "/admin/tai-lieu/them-moi", pro: false },
+    ],
+  },
+
+  // US07, US16, US17, US18, US19 - Báo cáo & Thống kê
+  {
+    name: "Báo cáo & Thống kê",
+    icon: <PieChartIcon />,
+    subItems: [
+      { name: "Thống kê tổng hợp", path: "/admin/bao-cao", pro: false },
+      { name: "Xuất báo cáo", path: "/admin/xuat-bao-cao", pro: false },
+    ],
+  },
+
+  // US08 - Chatbot hỗ trợ AI
+  {
+    icon: <ChatIcon />,
+    name: "Chatbot",
+    subItems: [
+      {
+        name: "Quản lý Tài liệu",
+        path: "/admin/chatbot-documents",
+        pro: false,
+      },
     ],
   },
 ];
 
 const othersItems: NavItem[] = [
+  // US10 - Quản lý danh mục tội danh
+  {
+    icon: <TableIcon />,
+    name: "Danh mục Tội danh",
+    path: "/admin/toi-danh",
+  },
+
+  // US11 - Quản lý đơn vị hành chính
+  {
+    icon: <GridIcon />,
+    name: "Đơn vị Hành chính",
+    path: "/admin/don-vi",
+  },
+
+  // US02 - Quản lý tài khoản người dùng
+  {
+    icon: <UserCircleIcon />,
+    name: "Quản lý Người dùng",
+    subItems: [
+      { name: "Danh sách người dùng", path: "/admin/nguoi-dung", pro: false },
+    ],
+  },
+
+  // US02 - Vai trò & Quyền hạn
   {
     icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
+    name: "Vai trò & Quyền hạn",
+    path: "/admin/vai-tro",
   },
+
+  // US20, US21 - Sao lưu & Phục hồi dữ liệu
   {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
-    ],
+    icon: <FileIcon />,
+    name: "Sao lưu Dữ liệu",
+    path: "/admin/sao-luu",
   },
+
+  // Cấu hình hệ thống
   {
     icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
+    name: "Cấu hình Hệ thống",
+    path: "/admin/cau-hinh",
   },
 ];
 

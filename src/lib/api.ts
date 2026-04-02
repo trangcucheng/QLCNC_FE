@@ -322,3 +322,109 @@ export const nguoiDungApi = {
       method: 'DELETE',
     }),
 };
+
+// ===== TỘI DANH =====
+
+export const toimDanhApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<{ data: any[]; total: number }>(`/toim-danh/list-all?${query}`);
+  },
+
+  getById: (id: string) =>
+    apiRequest<any>(`/toim-danh/${id}`),
+
+  create: (data: any) =>
+    apiRequest<any>('/toim-danh/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    apiRequest<any>(`/toim-danh/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiRequest<any>(`/toim-danh/${id}`, {
+      method: 'DELETE',
+    }),
+};
+
+// ===== ĐƠN VỊ HÀNH CHÍNH =====
+
+export const donViHanhChinhApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<{ data: any[]; total: number }>(`/don-vi-hanh-chinh/list-all?${query}`);
+  },
+
+  getTree: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<any[]>(`/don-vi-hanh-chinh/tree?${query}`);
+  },
+
+  getTinhThanhPho: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<{ data: any[]; total: number }>(`/don-vi-hanh-chinh/tinh-thanh-pho?${query}`);
+  },
+
+  getById: (id: string) =>
+    apiRequest<any>(`/don-vi-hanh-chinh/${id}`),
+
+  create: (data: any) =>
+    apiRequest<any>('/don-vi-hanh-chinh', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    apiRequest<any>(`/don-vi-hanh-chinh/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiRequest<any>(`/don-vi-hanh-chinh/${id}`, {
+      method: 'DELETE',
+    }),
+};
+
+// ===== VAI TRÒ =====
+
+export const rolesApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<any[]>(`/roles/list-all-role?${query}`);
+  },
+
+  getById: (id: string) =>
+    apiRequest<any>(`/roles/detail-role?roleId=${id}`),
+
+  create: (data: any) =>
+    apiRequest<any>('/roles/create-role', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    apiRequest<any>(`/roles/update-role?roleId=${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiRequest<any>(`/roles/delete-role?roleId=${id}`, {
+      method: 'DELETE',
+    }),
+};
+
+// ===== QUYỀN =====
+
+export const permissionsApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<any[]>(`/permissions/list-all-permission?${query}`);
+  },
+};

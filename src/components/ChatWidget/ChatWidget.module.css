@@ -30,8 +30,9 @@
 /* Panel */
 .chatWidgetPanel {
   position: fixed;
-  bottom: 100px;
-  right: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 760px;
   height: 600px;
   background: white;
@@ -47,11 +48,11 @@
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate(-50%, -50%) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -59,9 +60,9 @@
   .chatWidgetPanel {
     width: calc(100vw - 40px);
     height: calc(100vh - 100px);
-    bottom: 80px;
-    right: 20px;
-    left: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 

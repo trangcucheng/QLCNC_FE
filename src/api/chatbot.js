@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const CHATBOT_BASE = process.env.NEXT_PUBLIC_CHATBOT_API || 'https://chatbot.justtuananh.io.vn';
+const CHATBOT_BASE = process.env.NEXT_PUBLIC_CHATBOT_API || 'http://103.161.17.191:8001';
 
 // Internal API instance
 const API = axios.create({

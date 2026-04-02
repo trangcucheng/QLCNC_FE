@@ -7,6 +7,7 @@ import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { RootProvider } from '@/app/RootProvider';
+import ChatWidget from '@/components/ChatWidget';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -23,7 +24,10 @@ export default function RootLayout({
         <RootProvider>
           <AuthProvider>
             <ThemeProvider>
-              <SidebarProvider>{children}</SidebarProvider>
+              <SidebarProvider>
+                {children}
+                <ChatWidget />
+              </SidebarProvider>
             </ThemeProvider>
           </AuthProvider>
         </RootProvider>
