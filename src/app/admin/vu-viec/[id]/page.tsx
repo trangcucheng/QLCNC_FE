@@ -139,7 +139,7 @@ export default function ChiTietVuViecPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
       </div>
     );
   }
@@ -153,7 +153,7 @@ export default function ChiTietVuViecPage() {
         <div>
           <button
             onClick={() => router.back()}
-            className="text-blue-600 hover:text-blue-700 mb-2 flex items-center gap-2"
+            className="text-brand-600 hover:text-brand-700 mb-2 flex items-center gap-2"
           >
             ← Quay lại
           </button>
@@ -257,7 +257,7 @@ export default function ChiTietVuViecPage() {
               <a
                 key={vvdt.id}
                 href={`/admin/doi-tuong/${vvdt.doiTuong.id}`}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow hover:border-blue-500"
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow hover:border-brand-500"
               >
                 <div className="flex items-center gap-4">
                   {vvdt.doiTuong.anhDaiDien ? (
@@ -279,7 +279,7 @@ export default function ChiTietVuViecPage() {
                       CMND/CCCD: {vvdt.doiTuong.soCMND_CCCD}
                     </p>
                     {vvdt.vaiTro && (
-                      <p className="text-sm text-blue-600 font-medium">
+                      <p className="text-sm text-brand-600 font-medium">
                         Vai trò: {vvdt.vaiTro}
                       </p>
                     )}
@@ -302,7 +302,7 @@ export default function ChiTietVuViecPage() {
           {/* Timeline */}
           <div className="relative">
             {/* Vertical line */}
-            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500"></div>
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-brand-500 via-purple-500 to-pink-500"></div>
             
             {/* Timeline items */}
             <div className="space-y-8">
@@ -310,13 +310,13 @@ export default function ChiTietVuViecPage() {
                 <div key={history.id} className="relative pl-16">
                   {/* Timeline dot */}
                   <div className={`absolute left-3 w-6 h-6 rounded-full border-4 border-white shadow-lg ${
-                    index === 0 ? 'bg-gradient-to-br from-blue-500 to-purple-600 animate-pulse' : 
+                    index === 0 ? 'bg-gradient-to-br from-brand-500 to-purple-600 animate-pulse' : 
                     'bg-gradient-to-br from-gray-400 to-gray-500'
                   }`}></div>
                   
                   {/* Content card */}
                   <div className={`bg-gradient-to-br ${
-                    index === 0 ? 'from-blue-50 to-purple-50 border-blue-300' : 'from-gray-50 to-gray-100 border-gray-300'
+                    index === 0 ? 'from-brand-50 to-purple-50 border-brand-300' : 'from-gray-50 to-gray-100 border-gray-300'
                   } border-2 rounded-xl p-5 shadow-md hover:shadow-lg transition-all`}>
                     {/* Header */}
                     <div className="flex items-start justify-between mb-3">
@@ -427,7 +427,7 @@ export default function ChiTietVuViecPage() {
                   href={doc.duongDanFile}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 text-sm"
+                  className="text-brand-600 hover:text-brand-700 text-sm"
                 >
                   Tải xuống
                 </a>

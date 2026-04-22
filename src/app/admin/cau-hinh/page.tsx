@@ -250,9 +250,9 @@ export default function CauHinhPage() {
                 </Select>
               </Form.Item>
 
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h3 className="font-semibold text-blue-900 mb-2">Lưu ý:</h3>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="mt-6 p-4 bg-brand-50 rounded-lg">
+                <h3 className="font-semibold text-brand-900 mb-2">Lưu ý:</h3>
+                <ul className="text-sm text-brand-800 space-y-1">
                   <li>• Sao lưu tự động sẽ chạy vào lúc 02:00 sáng hàng ngày</li>
                   <li>• Dữ liệu sao lưu được lưu trữ trong thư mục backups/</li>
                   <li>• Hệ thống giữ lại tối đa 30 bản sao lưu gần nhất</li>

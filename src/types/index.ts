@@ -249,7 +249,7 @@ export const getGioiTinhLabel = (gender: GioiTinh): string => {
 // Color helpers for status badges
 export const getTrangThaiDoiTuongColor = (status: TrangThaiDoiTuong): string => {
   const colors: Record<TrangThaiDoiTuong, string> = {
-    DANG_THEO_DOI: 'bg-blue-100 text-blue-800',
+    DANG_THEO_DOI: 'bg-brand-100 text-brand-800',
     TAM_GIAM: 'bg-red-100 text-red-800',
     DA_XU_LY: 'bg-green-100 text-green-800',
     CHUYEN_NOI_KHAC: 'bg-gray-100 text-gray-800',
@@ -262,7 +262,7 @@ export const getTrangThaiHoSoColor = (status: TrangThaiHoSo): string => {
     DANG_XU_LY: 'bg-yellow-100 text-yellow-800',
     TAM_DUNG: 'bg-orange-100 text-orange-800',
     HOAN_THANH: 'bg-green-100 text-green-800',
-    CHUYEN_GIAI: 'bg-blue-100 text-blue-800',
+    CHUYEN_GIAI: 'bg-brand-100 text-brand-800',
     HUY_BO: 'bg-red-100 text-red-800',
   };
   return colors[status] || 'bg-gray-100 text-gray-800';

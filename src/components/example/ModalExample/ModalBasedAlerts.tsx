@@ -21,7 +21,7 @@ export default function ModalBasedAlerts() {
         </button>
         <button
           onClick={infoModal.openModal}
-          className="px-4 py-3 text-sm font-medium text-white rounded-lg bg-blue-light-500 shadow-theme-xs hover:bg-blue-light-600"
+          className="px-4 py-3 text-sm font-medium text-white rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600"
         >
           Info Alert
         </button>
@@ -150,7 +150,7 @@ export default function ModalBasedAlerts() {
           <div className="flex items-center justify-center w-full gap-3 mt-7">
             <button
               type="button"
-              className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-blue-light-500 shadow-theme-xs hover:bg-blue-light-600 sm:w-auto"
+              className="flex justify-center w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 sm:w-auto"
             >
               Okay, Got It
             </button>

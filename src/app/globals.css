@@ -38,31 +38,44 @@
   --color-white: #ffffff;
   --color-black: #101828;
 
-  --color-brand-25: #f2f7ff;
-  --color-brand-50: #ecf3ff;
-  --color-brand-100: #dde9ff;
-  --color-brand-200: #c2d6ff;
-  --color-brand-300: #9cb9ff;
-  --color-brand-400: #7592ff;
-  --color-brand-500: #465fff;
-  --color-brand-600: #3641f5;
-  --color-brand-700: #2a31d8;
-  --color-brand-800: #252dae;
-  --color-brand-900: #262e89;
-  --color-brand-950: #161950;
+  --color-brand-25: #fff5f7;
+  --color-brand-50: #ffe5ea;
+  --color-brand-100: #ffccd5;
+  --color-brand-200: #ffa3b3;
+  --color-brand-300: #ff7a91;
+  --color-brand-400: #ff516f;
+  --color-brand-500: #BA0C2F;
+  --color-brand-600: #a00a28;
+  --color-brand-700: #8B0A1F;
+  --color-brand-800: #6B0817;
+  --color-brand-900: #4a0510;
+  --color-brand-950: #2d030a;
 
-  --color-blue-light-25: #f5fbff;
-  --color-blue-light-50: #f0f9ff;
-  --color-blue-light-100: #e0f2fe;
-  --color-blue-light-200: #b9e6fe;
-  --color-blue-light-300: #7cd4fd;
-  --color-blue-light-400: #36bffa;
-  --color-blue-light-500: #0ba5ec;
-  --color-blue-light-600: #0086c9;
-  --color-blue-light-700: #026aa2;
-  --color-blue-light-800: #065986;
-  --color-blue-light-900: #0b4a6f;
-  --color-blue-light-950: #062c41;
+  --color-blue-25: #fff5f7;
+  --color-blue-50: #ffe5ea;
+  --color-blue-100: #ffccd5;
+  --color-blue-200: #ffa3b3;
+  --color-blue-300: #ff7a91;
+  --color-blue-400: #ff516f;
+  --color-blue-500: #BA0C2F;
+  --color-blue-600: #a00a28;
+  --color-blue-700: #8B0A1F;
+  --color-blue-800: #6B0817;
+  --color-blue-900: #4a0510;
+  --color-blue-950: #2d030a;
+
+  --color-blue-light-25: #fff5f7;
+  --color-blue-light-50: #ffe5ea;
+  --color-blue-light-100: #ffccd5;
+  --color-blue-light-200: #ffa3b3;
+  --color-blue-light-300: #ff7a91;
+  --color-blue-light-400: #ff516f;
+  --color-blue-light-500: #BA0C2F;
+  --color-blue-light-600: #a00a28;
+  --color-blue-light-700: #8B0A1F;
+  --color-blue-light-800: #6B0817;
+  --color-blue-light-900: #4a0510;
+  --color-blue-light-950: #2d030a;
 
   --color-gray-25: #fcfcfd;
   --color-gray-50: #f9fafb;
@@ -148,7 +161,7 @@
     0px 20px 24px -4px rgba(16, 24, 40, 0.08),
     0px 8px 8px -4px rgba(16, 24, 40, 0.03);
   --shadow-datepicker: -5px 0 0 #262d3c, 5px 0 0 #262d3c;
-  --shadow-focus-ring: 0px 0px 0px 4px rgba(70, 95, 255, 0.12);
+  --shadow-focus-ring: 0px 0px 0px 4px rgba(186, 12, 47, 0.12);
   --shadow-slider-navigation:
     0px 1px 2px 0px rgba(16, 24, 40, 0.1), 0px 1px 3px 0px rgba(16, 24, 40, 0.1);
   --shadow-tooltip:

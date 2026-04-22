@@ -7,5 +7,7 @@
 			"path": "../QLCNC_BE"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "QLCNC_FE"
+	}
 }

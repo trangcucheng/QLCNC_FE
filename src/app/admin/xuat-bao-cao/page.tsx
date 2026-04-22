@@ -119,7 +119,7 @@ export default function XuatBaoCaoPage() {
           <select
             value={selectedReport}
             onChange={(e) => setSelectedReport(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500"
           >
             <option value="tong-hop">Báo cáo tổng hợp</option>
             <option value="khu-vuc">Báo cáo theo khu vực</option>
@@ -140,7 +140,7 @@ export default function XuatBaoCaoPage() {
               onChange={(e) =>
                 setDateRange({ ...dateRange, tuNgay: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
@@ -153,7 +153,7 @@ export default function XuatBaoCaoPage() {
               onChange={(e) =>
                 setDateRange({ ...dateRange, denNgay: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function XuatBaoCaoPage() {
           <button
             onClick={handleExportWord}
             disabled={loading}
-            className="flex flex-col items-center justify-center p-8 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 hover:border-blue-400 rounded-lg transition-all disabled:opacity-50"
+            className="flex flex-col items-center justify-center p-8 bg-brand-50 hover:bg-brand-100 border-2 border-brand-200 hover:border-brand-400 rounded-lg transition-all disabled:opacity-50"
           >
             <div className="text-6xl mb-3">📝</div>
             <h3 className="font-bold text-gray-900">Word (.docx)</h3>
@@ -202,8 +202,8 @@ export default function XuatBaoCaoPage() {
       </div>
 
       {/* Note */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
+      <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
+        <p className="text-sm text-brand-800">
           <strong>Lưu ý:</strong> Chức năng xuất báo cáo sẽ tải file về máy tính
           của bạn. Đảm bảo trình duyệt cho phép tải file từ trang web này.
         </p>

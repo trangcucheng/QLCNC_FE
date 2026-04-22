@@ -123,7 +123,7 @@ export default function ChiTietVuViecPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function ChiTietVuViecPage() {
         <div>
           <button
             onClick={() => router.back()}
-            className="text-blue-600 hover:text-blue-700 mb-2 flex items-center gap-2"
+            className="text-brand-600 hover:text-brand-700 mb-2 flex items-center gap-2"
           >
             ← Quay lại
           </button>
@@ -241,7 +241,7 @@ export default function ChiTietVuViecPage() {
               <a
                 key={vvdt.id}
                 href={`/admin/doi-tuong/${vvdt.doiTuong.id}`}
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow hover:border-blue-500"
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow hover:border-brand-500"
               >
                 <div className="flex items-center gap-4">
                   {vvdt.doiTuong.anhDaiDien ? (
@@ -263,7 +263,7 @@ export default function ChiTietVuViecPage() {
                       CMND/CCCD: {vvdt.doiTuong.soCMND_CCCD}
                     </p>
                     {vvdt.vaiTro && (
-                      <p className="text-sm text-blue-600 font-medium">
+                      <p className="text-sm text-brand-600 font-medium">
                         Vai trò: {vvdt.vaiTro}
                       </p>
                     )}
@@ -285,7 +285,7 @@ export default function ChiTietVuViecPage() {
             {data.lichSuXuLy.map((history: any) => (
               <div
                 key={history.id}
-                className="border-l-4 border-blue-500 pl-4 py-2"
+                className="border-l-4 border-brand-500 pl-4 py-2"
               >
                 <div className="flex justify-between items-start">
                   <div>
@@ -353,7 +353,7 @@ export default function ChiTietVuViecPage() {
                   href={doc.duongDanFile}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 text-sm"
+                  className="text-brand-600 hover:text-brand-700 text-sm"
                 >
                   Tải xuống
                 </a>
