@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { hoSoDoiTuongApi, hoSoVuViecApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import {
@@ -11,6 +11,7 @@ import {
   getMucDoViPhamLabel,
   getMucDoViPhamColor,
 } from "@/types";
+import { showWarning, showError } from "@/utils/sweetalert";
 
 interface SearchResult {
   doiTuong: any[];
@@ -28,10 +29,14 @@ export default function TimKiemPage() {
     vuViec: [],
   });
 
+  useEffect(() => {
+    document.title = "Tìm kiếm | QLCNC";
+  }, []);
+
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!searchQuery.trim()) {
-      alert("Vui lòng nhập từ khóa tìm kiếm!");
+      showWarning("Vui lòng nhập từ khóa tìm kiếm!");
       return;
     }
 
@@ -72,7 +77,7 @@ export default function TimKiemPage() {
       });
     } catch (error) {
       console.error("Lỗi khi tìm kiếm:", error);
-      alert("Có lỗi xảy ra khi tìm kiếm!");
+      showError("Có lỗi xảy ra khi tìm kiếm!");
     } finally {
       setLoading(false);
     }
@@ -84,9 +89,9 @@ export default function TimKiemPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <h5 className="text-3xl font-bold text-gray-900 mb-4">
           Tìm kiếm thông tin
-        </h1>
+        </h5>
 
         {/* Search Form */}
         <form onSubmit={handleSearch} className="space-y-4">

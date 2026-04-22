@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card, Form, Input, InputNumber, Switch, Button, message, Tabs, Select, Divider } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
+import { cauHinhApi } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -25,8 +27,13 @@ interface CauHinh {
 }
 
 export default function CauHinhPage() {
+  const { hasPermission } = useAuth();
   const [form] = Form.useForm<CauHinh>();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    document.title = "Cấu hình Hệ thống | QLCNC";
+  }, []);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -36,27 +43,37 @@ export default function CauHinhPage() {
   const fetchCauHinh = async () => {
     try {
       setLoading(true);
-      // TODO: Call API
-      // const response = await fetch('/api/cau-hinh-he-thong');
-      // form.setFieldsValue(response.data);
+      const config = await cauHinhApi.getAsObject();
       
-      // Mock data
       form.setFieldsValue({
-        tenHeThong: "Hệ Thống Quản Lý Công Nghiệp Cơ Sở Việt Nam",
-        moTa: "Hệ thống quản lý hồ sơ đối tượng và vụ việc vi phạm pháp luật",
-        email: "contact@qlcnc.gov.vn",
-        soDienThoai: "0123456789",
-        diaChi: "Hà Nội, Việt Nam",
-        thoiGianSessionPhut: 60,
-        soLanDangNhapToiDa: 5,
-        batBuocXacThuc2Buoc: false,
-        batBuocDoiMatKhauDinhKy: true,
-        soNgayDoiMatKhau: 90,
-        kichHoatBackupTuDong: true,
-        tanSuatBackupGio: 24,
+        tenHeThong: config.tenHeThong || "Hệ Thống Quản Lý Công Nghiệp Cơ Sở Việt Nam",
+        moTa: config.moTa || "Hệ thống quản lý hồ sơ đối tượng và vụ việc vi phạm pháp luật",
+        email: config.email || "contact@qlcnc.gov.vn",
+        soDienThoai: config.soDienThoai || "0123456789",
+        diaChi: config.diaChi || "Hà Nội, Việt Nam",
+        logoPath: config.logoPath || "",
+        thoiGianSessionPhut: config.thoiGianSessionPhut || 60,
+        soLanDangNhapToiDa: config.soLanDangNhapToiDa || 5,
+        batBuocXacThuc2Buoc: config.batBuocXacThuc2Buoc || false,
+        batBuocDoiMatKhauDinhKy: config.batBuocDoiMatKhauDinhKy || true,
+        soNgayDoiMatKhau: config.soNgayDoiMatKhau || 90,
+        kichHoatBackupTuDong: config.kichHoatBackupTuDong || true,
+        tanSuatBackupGio: config.tanSuatBackupGio || 24,
       });
-    } catch (error) {
-      message.error("Lỗi khi tải cấu hình");
+    } catch (error: any) {
+      console.error("Lỗi khi tải cấu hình:", error);
+      message.error(error.message || "Lỗi khi tải cấu hình");
+      
+      // Nếu chưa có dữ liệu, có thể khởi tạo mặc định
+      if (error.message?.includes("404") || error.message?.includes("không tìm thấy")) {
+        try {
+          await cauHinhApi.initialize();
+          message.success("Đã khởi tạo cấu hình mặc định");
+          fetchCauHinh(); // Reload
+        } catch (initError) {
+          console.error("Lỗi khởi tạo:", initError);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -65,15 +82,12 @@ export default function CauHinhPage() {
   const handleSubmit = async (values: CauHinh) => {
     try {
       setSaving(true);
-      // TODO: Call API
-      // await fetch('/api/cau-hinh-he-thong', {
-      //   method: 'PUT',
-      //   body: JSON.stringify(values),
-      // });
-      
+      await cauHinhApi.updateMultiple(values);
       message.success("Lưu cấu hình thành công");
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi lưu cấu hình");
+      fetchCauHinh(); // Reload để đảm bảo đồng bộ
+    } catch (error: any) {
+      console.error("Lỗi khi lưu cấu hình:", error);
+      message.error(error.message || "Có lỗi xảy ra khi lưu cấu hình");
     } finally {
       setSaving(false);
     }
@@ -83,18 +97,20 @@ export default function CauHinhPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Cấu Hình Hệ Thống</h1>
+          <h5 className="text-3xl font-bold text-gray-900">Cấu Hình Hệ Thống</h5>
           <p className="text-gray-600 mt-1">Quản lý các thiết lập và cấu hình hệ thống</p>
         </div>
-        <Button
-          type="primary"
-          icon={<SaveOutlined />}
-          onClick={() => form.submit()}
-          loading={saving}
-          size="large"
-        >
-          Lưu Cấu Hình
-        </Button>
+        {hasPermission("UPDATE_CAU_HINH") && (
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            onClick={() => form.submit()}
+            loading={saving}
+            size="large"
+          >
+            Lưu Cấu Hình
+          </Button>
+        )}
       </div>
 
       <Form

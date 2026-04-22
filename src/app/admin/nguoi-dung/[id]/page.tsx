@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { nguoiDungApi } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
+import { showSuccess, showError, showConfirm } from "@/utils/sweetalert";
 
 interface NguoiDung {
   id: string;
@@ -25,6 +26,10 @@ export default function ChiTietNguoiDungPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "Chi tiết Người dùng | QLCNC";
+  }, []);
+
+  useEffect(() => {
     if (id) {
       fetchData();
     }
@@ -34,10 +39,11 @@ export default function ChiTietNguoiDungPage() {
     try {
       setLoading(true);
       const response = await nguoiDungApi.getById(id);
-      setData(response.data);
+      console.log("API Response:", response); // Debug log
+      setData(response || null);
     } catch (error) {
       console.error("Lỗi khi tải chi tiết người dùng:", error);
-      alert("Không tìm thấy người dùng này!");
+      showError("Không tìm thấy người dùng này!");
       router.back();
     } finally {
       setLoading(false);
@@ -51,27 +57,27 @@ export default function ChiTietNguoiDungPage() {
       await nguoiDungApi.update(id, {
         trangThaiHoatDong: !data.trangThaiHoatDong,
       });
-      alert(
+      showSuccess(
         `${!data.trangThaiHoatDong ? "Kích hoạt" : "Vô hiệu hóa"} người dùng thành công!`
       );
       fetchData();
     } catch (error) {
-      alert("Có lỗi khi cập nhật trạng thái!");
+      showError("Có lỗi khi cập nhật trạng thái!");
       console.error(error);
     }
   };
 
   const handleDelete = async () => {
     if (!data) return;
-    if (!confirm(`Bạn có chắc chắn muốn xóa người dùng "${data.hoTen}"?`))
-      return;
+    const confirmed = await showConfirm(`Bạn có chắc chắn muốn xóa người dùng "${data.hoTen}"?`);
+    if (!confirmed) return;
 
     try {
       await nguoiDungApi.delete(id);
-      alert("Xóa người dùng thành công!");
+      showSuccess("Xóa người dùng thành công!");
       router.push("/admin/nguoi-dung");
     } catch (error) {
-      alert("Có lỗi khi xóa người dùng!");
+      showError("Có lỗi khi xóa người dùng!");
       console.error(error);
     }
   };
@@ -115,7 +121,7 @@ export default function ChiTietNguoiDungPage() {
           >
             ← Quay lại
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">{data.hoTen}</h1>
+          <h5 className="text-3xl font-bold text-gray-900">{data.hoTen}</h5>
           <p className="text-gray-600 mt-1">{data.email}</p>
         </div>
         <div className="flex gap-3">

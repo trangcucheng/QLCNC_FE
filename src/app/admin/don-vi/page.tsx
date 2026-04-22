@@ -1,82 +1,158 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Table, Button, Input, Modal, Form, message, Space, Select, TreeSelect } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Table, Button, Input, Modal, Form, message, Space, Select, Tag } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import { donViHanhChinhApi } from "@/lib/api";
+import axios from "axios";
+import IconButton from "@/components/ui/IconButton";
+import { PencilIcon, TrashBinIcon } from "@/icons";
+import { useAuth } from "@/context/AuthContext";
 
 const { Option } = Select;
 
-interface DonViHanhChinh {
+interface XaPhuong {
   id: string;
-  maDonVi: string;
-  tenDonVi: string;
-  cap: string;
-  donViChaId?: string;
-  tenDonViCha?: string;
+  ma: string;
+  ten: string;
+  cap: number;
+  loai: string;
+  tinhThanhPhoId: string;
+  trangThai: boolean;
   ngayTao: string;
 }
 
+interface TinhThanhPho {
+  id: string;
+  ma: string;
+  ten: string;
+  cap: number;
+  loai: string;
+  tinhThanhPhoId: string | null;
+  trangThai: boolean;
+  ngayTao: string;
+  xaPhuong?: XaPhuong[];
+}
+
 export default function DonViPage() {
-  const [data, setData] = useState<DonViHanhChinh[]>([]);
+  const { hasPermission } = useAuth();
+  const [data, setData] = useState<TinhThanhPho[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<DonViHanhChinh | null>(null);
-  const [parentUnits, setParentUnits] = useState<DonViHanhChinh[]>([]);
+
+  useEffect(() => {
+    document.title = "Đơn vị Hành chính | QLCNC";
+  }, []);
+  const [editingRecord, setEditingRecord] = useState<any | null>(null);
+  const [tinhThanhList, setTinhThanhList] = useState<TinhThanhPho[]>([]);
   const [form] = Form.useForm();
 
   useEffect(() => {
-    fetchParentUnits();
-    fetchData();
+    fetchTreeData();
+    fetchTinhThanhList();
   }, []);
 
-  const fetchData = async () => {
+  const fetchTreeData = async () => {
+    setLoading(true);
     try {
-      const response = await donViHanhChinhApi.getAll({ page: 1, pageSize: 100 });
+      const token = localStorage.getItem("access_token");
+      const response = await axios.get<TinhThanhPho[]>(
+        `${process.env.NEXT_PUBLIC_API_URL}/don-vi-hanh-chinh/tree`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            page: 1,
+            pageSize: 100,
+          },
+        }
+      );
       setData(response.data || []);
-    } catch (error) {
-      message.error("Lỗi khi tải danh sách đơn vị hành chính");
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Lỗi khi tải danh sách đơn vị hành chính");
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchParentUnits = async () => {
+  const fetchTinhThanhList = async () => {
     try {
-      const response = await donViHanhChinhApi.getAll({ page: 1, pageSize: 1000 });
-      setParentUnits(response.data || []);
+      const token = localStorage.getItem("access_token");
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/don-vi-hanh-chinh/tinh-thanh-pho`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            page: 1,
+            pageSize: 100,
+          },
+        }
+      );
+      setTinhThanhList(response.data?.data || []);
     } catch (error) {
-      console.error("Lỗi khi tải danh sách đơn vị cha:", error);
+      console.error("Lỗi khi tải danh sách tỉnh/thành phố:", error);
     }
   };
 
   const handleSubmit = async (values: any) => {
     try {
+      const token = localStorage.getItem("access_token");
+      const payload = {
+        ...values,
+        cap: values.cap || 1,
+        trangThai: true,
+      };
+
       if (editingRecord) {
         // Update
-        await donViHanhChinhApi.update(editingRecord.id, values);
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_API_URL}/don-vi-hanh-chinh/${editingRecord.id}`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         message.success("Cập nhật đơn vị hành chính thành công");
       } else {
         // Create
-        await donViHanhChinhApi.create(values);
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/don-vi-hanh-chinh`,
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         message.success("Thêm đơn vị hành chính thành công");
       }
       setIsModalOpen(false);
       form.resetFields();
       setEditingRecord(null);
-      fetchData();
+      fetchTreeData();
+      fetchTinhThanhList();
     } catch (error: any) {
-      message.error(error.message || "Có lỗi xảy ra");
+      message.error(error.response?.data?.message || "Có lỗi xảy ra");
       console.error(error);
     }
   };
 
-  const handleEdit = (record: DonViHanhChinh) => {
+  const handleEdit = (record: any) => {
     setEditingRecord(record);
-    form.setFieldsValue(record);
+    form.setFieldsValue({
+      ma: record.ma,
+      ten: record.ten,
+      cap: record.cap,
+      loai: record.loai,
+      tinhThanhPhoId: record.tinhThanhPhoId,
+    });
     setIsModalOpen(true);
   };
 
@@ -86,11 +162,20 @@ export default function DonViPage() {
       content: "Bạn có chắc chắn muốn xóa đơn vị hành chính này?",
       onOk: async () => {
         try {
-          await donViHanhChinhApi.delete(id);
+          const token = localStorage.getItem("access_token");
+          await axios.delete(
+            `${process.env.NEXT_PUBLIC_API_URL}/don-vi-hanh-chinh/${id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
           message.success("Xóa đơn vị hành chính thành công");
-          fetchData();
+          fetchTreeData();
+          fetchTinhThanhList();
         } catch (error: any) {
-          message.error(error.message || "Có lỗi xảy ra khi xóa đơn vị hành chính");
+          message.error(error.response?.data?.message || "Có lỗi xảy ra khi xóa đơn vị hành chính");
           console.error(error);
         }
       },
@@ -103,45 +188,39 @@ export default function DonViPage() {
     setIsModalOpen(true);
   };
 
-  const getCapLabel = (cap: string) => {
-    const labels: Record<string, { text: string; color: string }> = {
-      TINH: { text: "Tỉnh/TP", color: "blue" },
-      HUYEN: { text: "Quận/Huyện", color: "green" },
-      XA: { text: "Xã/Phường/TT", color: "orange" },
-    };
-    return labels[cap] || { text: cap, color: "default" };
-  };
-
-  const columns: ColumnsType<DonViHanhChinh> = [
+  // Expandable table columns - Main table (Tỉnh/TP)
+  const columns: ColumnsType<TinhThanhPho> = [
     {
-      title: "Mã đơn vị",
-      dataIndex: "maDonVi",
-      key: "maDonVi",
-      width: 120,
+      title: "Mã",
+      dataIndex: "ma",
+      key: "ma",
+      width: 100,
     },
     {
-      title: "Tên đơn vị",
-      dataIndex: "tenDonVi",
-      key: "tenDonVi",
+      title: "Tên Tỉnh/Thành phố",
+      dataIndex: "ten",
+      key: "ten",
       filteredValue: searchText ? [searchText] : null,
       onFilter: (value, record) =>
-        record.tenDonVi.toLowerCase().includes((value as string).toLowerCase()),
+        record.ten.toLowerCase().includes((value as string).toLowerCase()),
     },
     {
-      title: "Cấp",
-      dataIndex: "cap",
-      key: "cap",
-      width: 150,
-      render: (cap: string) => {
-        const { text, color } = getCapLabel(cap);
-        return <span className={`px-3 py-1 rounded-full bg-${color}-100 text-${color}-700 text-sm font-medium`}>{text}</span>;
-      },
+      title: "Loại",
+      dataIndex: "loai",
+      key: "loai",
+      width: 120,
+      render: (loai: string) => (
+        <Tag color="blue">{loai}</Tag>
+      ),
     },
     {
-      title: "Trực thuộc",
-      dataIndex: "tenDonViCha",
-      key: "tenDonViCha",
-      render: (text) => text || "-",
+      title: "Số Xã/Phường",
+      key: "count",
+      width: 130,
+      align: "center",
+      render: (_, record) => (
+        <Tag color="green">{record.xaPhuong?.length || 0}</Tag>
+      ),
     },
     {
       title: "Ngày tạo",
@@ -153,50 +232,135 @@ export default function DonViPage() {
     {
       title: "Thao tác",
       key: "actions",
-      width: 150,
+      width: 120,
+      fixed: "right",
       render: (_, record) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            Sửa
-          </Button>
-          <Button
-            type="link"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-          >
-            Xóa
-          </Button>
-        </Space>
+        <div className="flex gap-2">
+          {hasPermission("don-vi:update") && (
+            <IconButton
+              icon={<PencilIcon />}
+              tooltip="Chỉnh sửa"
+              variant="edit"
+              onClick={() => handleEdit(record)}
+            />
+          )}
+          {hasPermission("don-vi:delete") && (
+            <IconButton
+              icon={<TrashBinIcon />}
+              tooltip="Xóa"
+              variant="delete"
+              onClick={() => handleDelete(record.id)}
+            />
+          )}
+        </div>
       ),
     },
   ];
+
+  // Expanded row columns (Xã/Phường)
+  const expandedRowColumns: ColumnsType<XaPhuong> = [
+    {
+      title: "Mã",
+      dataIndex: "ma",
+      key: "ma",
+      width: 100,
+    },
+    {
+      title: "Tên Xã/Phường",
+      dataIndex: "ten",
+      key: "ten",
+    },
+    {
+      title: "Loại",
+      dataIndex: "loai",
+      key: "loai",
+      width: 120,
+      render: (loai: string) => (
+        <Tag color="orange">{loai}</Tag>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "trangThai",
+      key: "trangThai",
+      width: 120,
+      render: (status: boolean) => (
+        <Tag color={status ? "success" : "error"}>
+          {status ? "Hoạt động" : "Ngưng"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "ngayTao",
+      key: "ngayTao",
+      width: 120,
+      render: (date: string) => new Date(date).toLocaleDateString("vi-VN"),
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 120,
+      render: (_, record) => (
+        <div className="flex gap-2">
+          {hasPermission("don-vi:update") && (
+            <IconButton
+              icon={<PencilIcon />}
+              tooltip="Chỉnh sửa"
+              variant="edit"
+              onClick={() => handleEdit(record)}
+            />
+          )}
+          {hasPermission("don-vi:delete") && (
+            <IconButton
+              icon={<TrashBinIcon />}
+              tooltip="Xóa"
+              variant="delete"
+              onClick={() => handleDelete(record.id)}
+            />
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  const expandedRowRender = (record: TinhThanhPho) => {
+    return (
+      <Table
+        columns={expandedRowColumns}
+        dataSource={record.xaPhuong || []}
+        pagination={false}
+        rowKey="id"
+        size="small"
+        className="ml-8"
+      />
+    );
+  };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Đơn Vị Hành Chính</h1>
-          <p className="text-gray-600 mt-1">Quản lý danh sách đơn vị hành chính</p>
+          <h5 className="text-3xl font-bold text-gray-900">Đơn Vị Hành Chính</h5>
+          <p className="text-gray-600 mt-1">Quản lý danh sách tỉnh/thành phố và xã/phường</p>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleAddNew}
-          size="large"
-        >
-          Thêm Đơn Vị
-        </Button>
+        {hasPermission("don-vi:create") && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleAddNew}
+            size="large"
+          >
+            Thêm Đơn Vị
+          </Button>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="mb-4">
-          <Input.Search
-            placeholder="Tìm kiếm đơn vị hành chính..."
+          <Input
+            placeholder="Tìm kiếm tỉnh/thành phố..."
+            prefix={<SearchOutlined />}
             onChange={(e) => setSearchText(e.target.value)}
             size="large"
             allowClear
@@ -209,10 +373,14 @@ export default function DonViPage() {
           dataSource={data}
           rowKey="id"
           loading={loading}
+          expandable={{
+            expandedRowRender,
+            rowExpandable: (record) => (record.xaPhuong?.length || 0) > 0,
+          }}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
-            showTotal: (total) => `Tổng ${total} đơn vị`,
+            showTotal: (total) => `Tổng ${total} tỉnh/thành phố`,
           }}
         />
       </div>
@@ -236,15 +404,15 @@ export default function DonViPage() {
         >
           <Form.Item
             label="Mã đơn vị"
-            name="maDonVi"
+            name="ma"
             rules={[{ required: true, message: "Vui lòng nhập mã đơn vị" }]}
           >
-            <Input placeholder="VD: 79" />
+            <Input placeholder="VD: HCM" />
           </Form.Item>
 
           <Form.Item
             label="Tên đơn vị"
-            name="tenDonVi"
+            name="ten"
             rules={[{ required: true, message: "Vui lòng nhập tên đơn vị" }]}
           >
             <Input placeholder="VD: Thành phố Hồ Chí Minh" />
@@ -255,21 +423,45 @@ export default function DonViPage() {
             name="cap"
             rules={[{ required: true, message: "Vui lòng chọn cấp" }]}
           >
-            <Select placeholder="Chọn cấp">
-              <Option value="TINH">Tỉnh/Thành phố</Option>
-              <Option value="HUYEN">Quận/Huyện</Option>
-              <Option value="XA">Xã/Phường/Thị trấn</Option>
+            <Select placeholder="Chọn cấp" onChange={(value) => {
+              if (value === 1) {
+                form.setFieldValue('tinhThanhPhoId', null);
+              }
+            }}>
+              <Option value={1}>Tỉnh/Thành phố (Cấp 1)</Option>
+              <Option value={2}>Xã/Phường (Cấp 2)</Option>
             </Select>
           </Form.Item>
 
-          <Form.Item label="Trực thuộc" name="donViChaId">
-            <Select placeholder="Chọn đơn vị cấp trên (nếu có)" allowClear>
-              {parentUnits.map((unit) => (
-                <Option key={unit.id} value={unit.id}>
-                  {unit.tenDonVi} ({getCapLabel(unit.cap).text})
-                </Option>
-              ))}
-            </Select>
+          <Form.Item
+            label="Loại"
+            name="loai"
+            rules={[{ required: true, message: "Vui lòng nhập loại" }]}
+          >
+            <Input placeholder="VD: Thành phố, Tỉnh, Xã, Phường" />
+          </Form.Item>
+
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.cap !== currentValues.cap}
+          >
+            {({ getFieldValue }) =>
+              getFieldValue('cap') === 2 ? (
+                <Form.Item 
+                  label="Thuộc Tỉnh/Thành phố" 
+                  name="tinhThanhPhoId"
+                  rules={[{ required: true, message: "Vui lòng chọn tỉnh/thành phố" }]}
+                >
+                  <Select placeholder="Chọn tỉnh/thành phố" showSearch optionFilterProp="children">
+                    {tinhThanhList.map((tinh) => (
+                      <Option key={tinh.id} value={tinh.id}>
+                        {tinh.ten} ({tinh.loai})
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              ) : null
+            }
           </Form.Item>
 
           <Form.Item>

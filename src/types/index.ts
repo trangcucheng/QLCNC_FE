@@ -122,6 +122,7 @@ export interface HoSoDoiTuong {
   trangThai: TrangThaiDoiTuong;
   ghiChu?: string;
   anhDaiDien?: string;
+  fileAnh?: string[];
   ngayTao?: Date | string;
   ngayCapNhat?: Date | string;
   createdAt?: Date | string;
@@ -151,22 +152,23 @@ export interface HoSoVuViec {
   ghiChu?: string;
   ngayTao?: Date | string;
   ngayCapNhat?: Date | string;
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
   VuViecDoiTuong?: Array<{
     id: string;
     vaiTro?: string;
     hoSoDoiTuong: HoSoDoiTuong;
   }>;
-  LichSuTrangThai?: Array<{
+  vuViecDoiTuong?: Array<{
     id: string;
-    trangThai: TrangThaiHoSo;
-    lyDoThayDoi?: string;
-    createdAt: Date | string;
-    nguoiThayDoi?: {
-      id: string;
-      hoTen: string;
-    };
+    vaiTro?: string;
+    doiTuong: HoSoDoiTuong;
+  }>;
+  lichSuXuLy?: Array<{
+    id: string;
+    trangThaiCu?: TrangThaiHoSo;
+    trangThaiMoi: TrangThaiHoSo;
+    lyDo: string;
+    nguoiThucHien: string;
+    ngayThucHien: Date | string;
   }>;
 }
 

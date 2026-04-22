@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { nguoiDungApi } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
+import { showSuccess, showError, showWarning } from "@/utils/sweetalert";
 
 export default function ChinhSuaNguoiDungPage() {
   const router = useRouter();
@@ -20,6 +21,10 @@ export default function ChinhSuaNguoiDungPage() {
   });
 
   useEffect(() => {
+    document.title = "Chỉnh sửa Người dùng | QLCNC";
+  }, []);
+
+  useEffect(() => {
     if (id) {
       fetchData();
     }
@@ -29,7 +34,8 @@ export default function ChinhSuaNguoiDungPage() {
     try {
       setLoading(true);
       const response = await nguoiDungApi.getById(id);
-      const data = response.data;
+      console.log("API Response:", response); // Debug log
+      const data = response || {};
       setFormData({
         hoTen: data.hoTen || "",
         email: data.email || "",
@@ -39,7 +45,7 @@ export default function ChinhSuaNguoiDungPage() {
       });
     } catch (error) {
       console.error("Lỗi khi tải thông tin người dùng:", error);
-      alert("Không tìm thấy người dùng này!");
+      showError("Không tìm thấy người dùng này!");
       router.back();
     } finally {
       setLoading(false);
@@ -64,18 +70,18 @@ export default function ChinhSuaNguoiDungPage() {
 
     // Validation
     if (!formData.hoTen || !formData.email) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      showWarning("Vui lòng điền đầy đủ thông tin bắt buộc!");
       return;
     }
 
     try {
       setSaving(true);
       await nguoiDungApi.update(id, formData);
-      alert("Cập nhật người dùng thành công!");
+      showSuccess("Cập nhật người dùng thành công!");
       router.push(`/admin/nguoi-dung/${id}`);
     } catch (error: any) {
       console.error("Lỗi khi cập nhật người dùng:", error);
-      alert(error.message || "Có lỗi khi cập nhật người dùng!");
+      showError(error.message || "Có lỗi khi cập nhật người dùng!");
     } finally {
       setSaving(false);
     }
@@ -99,7 +105,7 @@ export default function ChinhSuaNguoiDungPage() {
         >
           ← Quay lại
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">Chỉnh sửa người dùng</h1>
+        <h5 className="text-3xl font-bold text-gray-900">Chỉnh sửa người dùng</h5>
         <p className="text-gray-600 mt-1">
           Cập nhật thông tin tài khoản người dùng
         </p>

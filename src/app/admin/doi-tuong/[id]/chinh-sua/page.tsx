@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { hoSoDoiTuongApi } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
+import { showSuccess, showError } from "@/utils/sweetalert";
 
 export default function ChinhSuaDoiTuongPage() {
   const router = useRouter();
@@ -41,6 +42,10 @@ export default function ChinhSuaDoiTuongPage() {
     trangThai: "DANG_THEO_DOI",
     ghiChu: "",
   });
+
+  useEffect(() => {
+    document.title = "Chỉnh sửa Đối tượng | QLCNC";
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -92,7 +97,7 @@ export default function ChinhSuaDoiTuongPage() {
       });
     } catch (error) {
       console.error("Lỗi khi tải thông tin đối tượng:", error);
-      alert("Không tìm thấy đối tượng này!");
+      showError("Không tìm thấy đối tượng này!");
       router.back();
     } finally {
       setLoading(false);
@@ -126,7 +131,7 @@ export default function ChinhSuaDoiTuongPage() {
       };
 
       await hoSoDoiTuongApi.update(id, submitData);
-      alert("Cập nhật đối tượng thành công!");
+      showSuccess("Cập nhật đối tượng thành công!");
       router.push(`/admin/doi-tuong/${id}`);
     } catch (err: any) {
       setError(err.message || "Có lỗi xảy ra khi cập nhật đối tượng");
@@ -152,7 +157,7 @@ export default function ChinhSuaDoiTuongPage() {
         >
           ← Quay lại
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">Chỉnh sửa đối tượng</h1>
+        <h5 className="text-3xl font-bold text-gray-900">Chỉnh sửa đối tượng</h5>
         <p className="text-gray-600 mt-1">
           Cập nhật thông tin đối tượng vi phạm pháp luật
         </p>

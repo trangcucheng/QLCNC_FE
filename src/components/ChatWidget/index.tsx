@@ -155,7 +155,6 @@ const ChatWidget: FC = () => {
   const error = useSelector(selectChatbotError) as string | null;
 
   // Position & UI state
-  const [pos, setPos] = useState<Position>({ x: 0, y: 0 });
   const [open, setOpen] = useState(false);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [isAuth, setIsAuth] = useState(true); // DEV: Auto-auth enabled
@@ -176,7 +175,6 @@ const ChatWidget: FC = () => {
   const messagesRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dragOffsetRef = useRef<Position>({ x: 0, y: 0 });
   const streamControllersRef = useRef<Record<string, AbortController>>({});
   const typewriterRef = useRef(new TypewriterManager(TYPEWRITER_SPEED));
 
@@ -199,23 +197,6 @@ const ChatWidget: FC = () => {
   // Init & Auth Check
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      try {
-        const savedPos = localStorage.getItem('chatWidgetPos');
-        if (savedPos) {
-          setPos(JSON.parse(savedPos));
-        } else {
-          setPos({
-            x: window.innerWidth - 80,
-            y: window.innerHeight - 80,
-          });
-        }
-      } catch {
-        setPos({
-          x: window.innerWidth - 80,
-          y: window.innerHeight - 80,
-        });
-      }
-
       try {
         const savedMessages = localStorage.getItem('chatWidgetHistory');
         if (savedMessages) {
@@ -300,76 +281,6 @@ const ChatWidget: FC = () => {
       }, 100);
     }
   }, [open]);
-
-  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.button !== 0 || !bubbleRef.current) return;
-
-    const rect = bubbleRef.current.getBoundingClientRect();
-    dragOffsetRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      let newX = moveEvent.clientX - dragOffsetRef.current.x;
-      let newY = moveEvent.clientY - dragOffsetRef.current.y;
-
-      newX = Math.max(0, Math.min(newX, window.innerWidth - 60));
-      newY = Math.max(0, Math.min(newY, window.innerHeight - 60));
-
-      setPos({ x: newX, y: newY });
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('chatWidgetPos', JSON.stringify(pos));
-      }
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }, [pos]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setPos((prevPos) => ({
-        x: Math.max(0, Math.min(prevPos.x, window.innerWidth - 60)),
-        y: Math.max(0, Math.min(prevPos.y, window.innerHeight - 60)),
-      }));
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const startResize = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const startW = dims.w;
-    const startH = dims.h;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      let newW = startW + (moveEvent.clientX - startX);
-      let newH = startH + (moveEvent.clientY - startY);
-
-      newW = Math.max(420, Math.min(newW, window.innerWidth - 40));
-      newH = Math.max(400, Math.min(newH, window.innerHeight - 40));
-
-      setDims({ w: newW, h: newH });
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }, [dims]);
 
   const extractAnswer = (res: any): string => {
     if (!res) return '';
@@ -861,11 +772,6 @@ const ChatWidget: FC = () => {
           bubbleVisible ? styles.visible : ''
         } ${open ? styles.hidden : ''}`}
         ref={bubbleRef}
-        style={{
-          left: `${pos.x}px`,
-          top: `${pos.y}px`,
-        }}
-        onMouseDown={onMouseDown}
         onClick={toggleOpen}
         role="button"
         tabIndex={0}
@@ -876,5 +782,6 @@ const ChatWidget: FC = () => {
     </div>
   );
 };
+
 
 export default ChatWidget;

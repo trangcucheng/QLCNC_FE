@@ -92,6 +92,36 @@ export const MENU_CONFIG: MenuItem[] = [
     ],
   },
   {
+    title: "Tội danh",
+    icon: "⚖️",
+    path: "/admin/toi-danh",
+    permission: "toi-danh:read",
+  },
+  {
+    title: "Quan hệ xã hội",
+    icon: "👥",
+    path: "/admin/quan-he-xa-hoi",
+    permission: "quan-he-xa-hoi:read",
+  },
+  {
+    title: "Đơn vị",
+    icon: "🏢",
+    path: "/admin/don-vi",
+    permission: "don-vi:read",
+  },
+  {
+    title: "Biểu mẫu",
+    icon: "📋",
+    path: "/admin/bieu-mau",
+    permission: "bieu-mau:read",
+  },
+  {
+    title: "Thông báo",
+    icon: "🔔",
+    path: "/admin/thong-bao",
+    permission: "thong-bao:read",
+  },
+  {
     title: "Quản trị hệ thống",
     icon: "⚙️",
     role: "QUAN_TRI_VIEN", // Chỉ Admin mới thấy
@@ -212,6 +242,42 @@ export const ROLE_MENUS = {
       title: "Tìm kiếm",
       path: "/admin/tim-kiem",
       icon: "🔍",
+    },
+    {
+      title: "Tội danh",
+      icon: "⚖️",
+      path: "/admin/toi-danh",
+      permission: "toi-danh:read",
+    },
+    {
+      title: "Quan hệ xã hội",
+      icon: "👥",
+      path: "/admin/quan-he-xa-hoi",
+      permission: "quan-he-xa-hoi:read",
+    },
+    {
+      title: "Đơn vị hành chính",
+      icon: "🏢",
+      path: "/admin/don-vi",
+      permission: "don-vi:read",
+    },
+    {
+      title: "Đơn vị tổ chức",
+      icon: "🏛️",
+      path: "/admin/don-vi-to-chuc",
+      permission: "don-vi-to-chuc:read",
+    },
+    {
+      title: "Biểu mẫu",
+      icon: "📋",
+      path: "/admin/bieu-mau",
+      permission: "bieu-mau:read",
+    },
+    {
+      title: "Thông báo",
+      icon: "🔔",
+      path: "/admin/thong-bao",
+      permission: "thong-bao:read",
     },
     {
       title: "Báo cáo",

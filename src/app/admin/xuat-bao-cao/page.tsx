@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { baoCaoApi } from "@/lib/api";
+import Swal from "sweetalert2";
 
 export default function XuatBaoCaoPage() {
   const [loading, setLoading] = useState(false);
@@ -10,13 +12,38 @@ export default function XuatBaoCaoPage() {
   });
   const [selectedReport, setSelectedReport] = useState("tong-hop");
 
+  useEffect(() => {
+    document.title = "Xuất báo cáo | QLCNC";
+  }, []);
+
+  const buildQueryParams = () => {
+    const params: any = {};
+    if (dateRange.tuNgay) params.tuNgay = dateRange.tuNgay;
+    if (dateRange.denNgay) params.denNgay = dateRange.denNgay;
+    return params;
+  };
+
   const handleExportExcel = async () => {
     try {
       setLoading(true);
-      // TODO: Call API to export Excel
-      alert("Chức năng xuất Excel đang được phát triển!");
-    } catch (error) {
-      alert("Có lỗi khi xuất báo cáo!");
+      const params = buildQueryParams();
+      
+      await baoCaoApi.exportExcel(params);
+      
+      Swal.fire({
+        icon: "success",
+        title: "Thành công!",
+        text: "Đã tải xuống báo cáo Excel",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error: any) {
+      console.error("Export Excel error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: error.message || "Có lỗi khi xuất báo cáo Excel",
+      });
     } finally {
       setLoading(false);
     }
@@ -25,10 +52,24 @@ export default function XuatBaoCaoPage() {
   const handleExportPDF = async () => {
     try {
       setLoading(true);
-      // TODO: Call API to export PDF
-      alert("Chức năng xuất PDF đang được phát triển!");
-    } catch (error) {
-      alert("Có lỗi khi xuất báo cáo!");
+      const params = buildQueryParams();
+      
+      await baoCaoApi.exportPDF(params);
+      
+      Swal.fire({
+        icon: "success",
+        title: "Thành công!",
+        text: "Đã tải xuống báo cáo PDF",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error: any) {
+      console.error("Export PDF error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: error.message || "Có lỗi khi xuất báo cáo PDF",
+      });
     } finally {
       setLoading(false);
     }
@@ -37,10 +78,24 @@ export default function XuatBaoCaoPage() {
   const handleExportWord = async () => {
     try {
       setLoading(true);
-      // TODO: Call API to export Word
-      alert("Chức năng xuất Word đang được phát triển!");
-    } catch (error) {
-      alert("Có lỗi khi xuất báo cáo!");
+      const params = buildQueryParams();
+      
+      await baoCaoApi.exportWord(params);
+      
+      Swal.fire({
+        icon: "success",
+        title: "Thành công!",
+        text: "Đã tải xuống báo cáo Word",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error: any) {
+      console.error("Export Word error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Lỗi!",
+        text: error.message || "Có lỗi khi xuất báo cáo Word",
+      });
     } finally {
       setLoading(false);
     }
@@ -49,7 +104,7 @@ export default function XuatBaoCaoPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Xuất Báo Cáo</h1>
+        <h5 className="text-3xl font-bold text-gray-900">Xuất Báo Cáo</h5>
         <p className="text-gray-600 mt-1">
           Xuất báo cáo dưới nhiều định dạng khác nhau
         </p>
@@ -106,7 +161,7 @@ export default function XuatBaoCaoPage() {
 
       {/* Export Buttons */}
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Định dạng xuất</h2>
+        <h5 className="text-xl font-bold text-gray-900 mb-4">Định dạng xuất</h5>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={handleExportExcel}

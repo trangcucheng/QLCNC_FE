@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { hoSoDoiTuongApi, danhMucApi } from "@/lib/api";
+import { hoSoDoiTuongApi, danhMucApi, getImageUrl } from "@/lib/api";
+import { showSuccess, showError, showWarning, showConfirm, showInfo } from "@/utils/sweetalert";
 
 interface QuanHe {
   id: string;
@@ -31,6 +32,10 @@ export default function QuanHeDoiTuongPage() {
     quanHeId: "",
     moTa: "",
   });
+
+  useEffect(() => {
+    document.title = "Quản hệ Đối tượng | QLCNC";
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -76,7 +81,7 @@ export default function QuanHeDoiTuongPage() {
   const handleAddQuanHe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!addFormData.doiTuongLienQuan || !addFormData.quanHeId) {
-      alert("Vui lòng chọn đầy đủ thông tin!");
+      showWarning("Vui lòng chọn đầy đủ thông tin!");
       return;
     }
 
@@ -88,26 +93,27 @@ export default function QuanHeDoiTuongPage() {
       //   quanHeId: addFormData.quanHeId,
       //   moTa: addFormData.moTa,
       // });
-      alert("Thêm quan hệ thành công! (Cần tích hợp API)");
+      showInfo("Thêm quan hệ thành công! (Cần tích hợp API)");
       setShowAddForm(false);
       setAddFormData({ doiTuongLienQuan: "", quanHeId: "", moTa: "" });
       fetchData();
     } catch (error) {
-      alert("Có lỗi khi thêm quan hệ!");
+      showError("Có lỗi khi thêm quan hệ!");
       console.error(error);
     }
   };
 
   const handleDeleteQuanHe = async (quanHeId: string) => {
-    if (!confirm("Bạn có chắc muốn xóa quan hệ này?")) return;
+    const confirmed = await showConfirm("Bạn có chắc muốn xóa quan hệ này?");
+    if (!confirmed) return;
 
     try {
       // TODO: Call API to delete relation
       // await quanHeDoiTuongApi.delete(quanHeId);
-      alert("Xóa quan hệ thành công! (Cần tích hợp API)");
+      showInfo("Xóa quan hệ thành công! (Cần tích hợp API)");
       fetchData();
     } catch (error) {
-      alert("Có lỗi khi xóa quan hệ!");
+      showError("Có lỗi khi xóa quan hệ!");
       console.error(error);
     }
   };
@@ -130,9 +136,9 @@ export default function QuanHeDoiTuongPage() {
         >
           ← Quay lại
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h5 className="text-3xl font-bold text-gray-900">
           Quản lý quan hệ: {data.hoTen}
-        </h1>
+        </h5>
         <p className="text-gray-600 mt-1">
           Quản lý mối quan hệ với các đối tượng khác
         </p>
@@ -143,7 +149,7 @@ export default function QuanHeDoiTuongPage() {
         <div className="flex items-start gap-4">
           {data.anhDaiDien && (
             <img
-              src={data.anhDaiDien}
+              src={getImageUrl(data.anhDaiDien)}
               alt={data.hoTen}
               className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
             />

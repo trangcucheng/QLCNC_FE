@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { hoSoDoiTuongApi, taiLieuApi } from "@/lib/api";
+import { hoSoDoiTuongApi, taiLieuApi, getImageUrl } from "@/lib/api";
 import { useRouter, useParams } from "next/navigation";
+import { message } from "antd";
 import {
   HoSoDoiTuong,
   getTrangThaiDoiTuongLabel,
@@ -10,6 +11,7 @@ import {
   getGioiTinhLabel,
   TaiLieuDoiTuong,
 } from "@/types";
+import { showError, showSuccess, showConfirm } from "@/utils/sweetalert";
 
 export default function ChiTietDoiTuongPage() {
   const router = useRouter();
@@ -20,6 +22,11 @@ export default function ChiTietDoiTuongPage() {
   const [documents, setDocuments] = useState<TaiLieuDoiTuong[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+
+  useEffect(() => {
+    document.title = "Chi tiết Đối tượng | QLCNC";
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -35,7 +42,7 @@ export default function ChiTietDoiTuongPage() {
       setData(response.data);
     } catch (error) {
       console.error("Lỗi khi tải chi tiết đối tượng:", error);
-      alert("Không tìm thấy đối tượng này!");
+      showError("Không tìm thấy đối tượng này!");
       router.back();
     } finally {
       setLoading(false);
@@ -64,10 +71,10 @@ export default function ChiTietDoiTuongPage() {
     try {
       setUploading(true);
       await taiLieuApi.uploadDoiTuong(id, file, loaiTaiLieu);
-      alert("Upload tài liệu thành công!");
+      showSuccess("Upload tài liệu thành công!");
       fetchDocuments();
     } catch (error) {
-      alert("Có lỗi khi upload tài liệu!");
+      showError("Có lỗi khi upload tài liệu!");
       console.error(error);
     } finally {
       setUploading(false);
@@ -75,15 +82,34 @@ export default function ChiTietDoiTuongPage() {
   };
 
   const handleDeleteDocument = async (docId: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa tài liệu này?")) return;
+    const confirmed = await showConfirm("Bạn có chắc chắn muốn xóa tài liệu này?");
+    if (!confirmed) return;
 
     try {
       await taiLieuApi.delete(docId);
-      alert("Xóa tài liệu thành công!");
+      message.success("Xóa tài liệu thành công!");
       fetchDocuments();
     } catch (error) {
-      alert("Có lỗi khi xóa tài liệu!");
+      message.error("Có lỗi khi xóa tài liệu!");
       console.error(error);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      setUploadingImages(true);
+      const fileArray = Array.from(files);
+      await hoSoDoiTuongApi.uploadAnh(id, fileArray);
+      message.success(`Upload thành công ${fileArray.length} ảnh!`);
+      fetchData(); // Reload to show new images
+    } catch (error) {
+      message.error("Có lỗi khi upload ảnh!");
+      console.error(error);
+    } finally {
+      setUploadingImages(false);
     }
   };
 
@@ -108,7 +134,7 @@ export default function ChiTietDoiTuongPage() {
           >
             ← Quay lại
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">{data.hoTen}</h1>
+          <h5 className="text-3xl font-bold text-gray-900">{data.hoTen}</h5>
           {data.tenGoiKhac && (
             <p className="text-gray-600 mt-1">Aka: {data.tenGoiKhac}</p>
           )}
@@ -139,7 +165,7 @@ export default function ChiTietDoiTuongPage() {
           {data.anhDaiDien && (
             <div className="md:col-span-3 flex justify-center">
               <img
-                src={data.anhDaiDien}
+                src={getImageUrl(data.anhDaiDien)}
                 alt={data.hoTen}
                 className="w-40 h-40 rounded-full object-cover border-4 border-gray-200"
               />
@@ -335,6 +361,45 @@ export default function ChiTietDoiTuongPage() {
           </div>
         </div>
       )}
+
+      {/* Ảnh đối tượng */}
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-900">
+            Ảnh đối tượng ({data.fileAnh?.length || 0})
+          </h2>
+          <label className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium cursor-pointer">
+            {uploadingImages ? "Đang upload..." : "📷 Thêm ảnh"}
+            <input
+              type="file"
+              onChange={handleImageUpload}
+              className="hidden"
+              accept="image/*"
+              multiple
+              disabled={uploadingImages}
+            />
+          </label>
+        </div>
+        {data.fileAnh && data.fileAnh.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {data.fileAnh.map((anh, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={getImageUrl(anh)}
+                  alt={`Ảnh ${index + 1}`}
+                  className="w-full h-48 object-cover rounded-lg border-2 border-gray-200 group-hover:border-blue-500 transition-colors cursor-pointer"
+                  onClick={() => window.open(getImageUrl(anh), '_blank')}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-400">
+            <p className="text-lg">Chưa có ảnh nào</p>
+            <p className="text-sm mt-2">Nhấn nút "Thêm ảnh" để upload</p>
+          </div>
+        )}
+      </div>
 
       {/* Tài liệu đính kèm */}
       <div className="bg-white rounded-xl shadow-lg p-6">

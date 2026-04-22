@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -11,29 +11,52 @@ export function DynamicSidebar() {
   const { user, hasPermission, hasRole, logout } = useAuth();
   const [openMenus, setOpenMenus] = useState<string[]>([]);
 
+  // Debug: Log MENU_CONFIG khi component mount
+  useEffect(() => {
+    console.log('🔍 DEBUG: MENU_CONFIG loaded:', MENU_CONFIG);
+    console.log('🔍 DEBUG: Current user:', user);
+    if (user) {
+      console.log('🔍 DEBUG: User permissions:', user.permissions);
+      console.log('🔍 DEBUG: User roles:', user.roles);
+    }
+  }, [user]);
+
   if (!user) return null;
 
   // Lấy menu theo loại người dùng
   const getMenuForUser = (): MenuItem[] => {
     // Nếu có role-based menus được định nghĩa sẵn, dùng nó
     if (user.loaiNguoiDung in ROLE_MENUS) {
-      return ROLE_MENUS[user.loaiNguoiDung as keyof typeof ROLE_MENUS];
+      const roleMenu = ROLE_MENUS[user.loaiNguoiDung as keyof typeof ROLE_MENUS];
+      console.log('🔍 DEBUG: Role Menu for', user.loaiNguoiDung, roleMenu);
+      return roleMenu;
     }
     
     // Nếu không, filter từ MENU_CONFIG dựa trên permissions
-    return filterMenuByPermissions(MENU_CONFIG);
+    const filtered = filterMenuByPermissions(MENU_CONFIG);
+    console.log('🔍 DEBUG: Filtered Menu', filtered);
+    return filtered;
   };
 
   // Filter menu items dựa trên permissions và roles
   const filterMenuByPermissions = (items: MenuItem[]): MenuItem[] => {
     return items.filter((item) => {
+      console.log(`🔍 Checking menu item: ${item.title}`, {
+        hasRole: item.role ? hasRole(item.role) : 'N/A',
+        hasPermission: item.permission ? hasPermission(item.permission) : 'N/A',
+        requiredRole: item.role,
+        requiredPermission: item.permission
+      });
+
       // Check role requirement
       if (item.role && !hasRole(item.role)) {
+        console.log(`❌ Filtered out ${item.title} - missing role ${item.role}`);
         return false;
       }
 
       // Check permission requirement
       if (item.permission && !hasPermission(item.permission)) {
+        console.log(`❌ Filtered out ${item.title} - missing permission ${item.permission}`);
         return false;
       }
 
@@ -41,9 +64,14 @@ export function DynamicSidebar() {
       if (item.children) {
         item.children = filterMenuByPermissions(item.children);
         // Chỉ hiển thị menu cha nếu có ít nhất 1 children sau khi filter
-        return item.children.length > 0;
+        const hasVisibleChildren = item.children.length > 0;
+        if (!hasVisibleChildren) {
+          console.log(`❌ Filtered out ${item.title} - no visible children`);
+        }
+        return hasVisibleChildren;
       }
 
+      console.log(`✅ Showing ${item.title}`);
       return true;
     });
   };

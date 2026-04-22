@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { hoSoDoiTuongApi } from "@/lib/api";
+import { hoSoDoiTuongApi, getImageUrl } from "@/lib/api";
 import {
   HoSoDoiTuong,
   getTrangThaiDoiTuongLabel,
   getTrangThaiDoiTuongColor,
   getGioiTinhLabel,
 } from "@/types";
+import IconButton from "@/components/ui/IconButton";
+import { EyeIcon, PencilIcon, TrashBinIcon } from "@/icons";
+import { useAuth } from "@/context/AuthContext";
+import { showSuccess, showError, showConfirm } from "@/utils/sweetalert";
 
 export default function DoiTuongPage() {
+  const { hasPermission } = useAuth();
   const [data, setData] = useState<HoSoDoiTuong[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -25,6 +30,10 @@ export default function DoiTuongPage() {
     page: 1,
     limit: 10,
   });
+
+  useEffect(() => {
+    document.title = "Quản lý Đối tượng | QLCNC";
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -52,14 +61,15 @@ export default function DoiTuongPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa đối tượng này?")) return;
+    const confirmed = await showConfirm("Bạn có chắc chắn muốn xóa đối tượng này?");
+    if (!confirmed) return;
 
     try {
       await hoSoDoiTuongApi.delete(id);
-      alert("Xóa thành công!");
+      showSuccess("Xóa thành công!");
       fetchData();
     } catch (error) {
-      alert("Có lỗi xảy ra khi xóa!");
+      showError("Có lỗi xảy ra khi xóa!");
       console.error(error);
     }
   };
@@ -69,17 +79,19 @@ export default function DoiTuongPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản Lý Đối Tượng</h1>
+          <h5 className="text-3xl font-bold text-gray-900">Quản Lý Đối Tượng</h5>
           <p className="text-gray-600 mt-1">
             Quản lý thông tin các đối tượng vi phạm pháp luật
           </p>
         </div>
-        <a
-          href="/admin/doi-tuong/them-moi"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          ➕ Thêm Đối Tượng Mới
-        </a>
+        {hasPermission("ho-so-doi-tuong:create") && (
+          <a
+            href="/admin/doi-tuong/them-moi"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            ➕ Thêm Đối Tượng Mới
+          </a>
+        )}
       </div>
 
       {/* Search & Filter */}
@@ -180,7 +192,7 @@ export default function DoiTuongPage() {
                           {item.anhDaiDien ? (
                             <img
                               className="h-10 w-10 rounded-full object-cover"
-                              src={item.anhDaiDien}
+                              src={getImageUrl(item.anhDaiDien)}
                               alt=""
                             />
                           ) : (
@@ -225,25 +237,31 @@ export default function DoiTuongPage() {
                         {getTrangThaiDoiTuongLabel(item.trangThai)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <a
-                        href={`/admin/doi-tuong/${item.id}`}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        👁️ Xem
-                      </a>
-                      <a
-                        href={`/admin/doi-tuong/${item.id}/chinh-sua`}
-                        className="text-yellow-600 hover:text-yellow-900"
-                      >
-                        ✏️ Sửa
-                      </a>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        🗑️ Xóa
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex gap-2">
+                        <IconButton
+                          icon={<EyeIcon />}
+                          tooltip="Xem chi tiết"
+                          variant="view"
+                          href={`/admin/doi-tuong/${item.id}`}
+                        />
+                        {hasPermission("ho-so-doi-tuong:update") && (
+                          <IconButton
+                            icon={<PencilIcon />}
+                            tooltip="Chỉnh sửa"
+                            variant="edit"
+                            href={`/admin/doi-tuong/${item.id}/chinh-sua`}
+                          />
+                        )}
+                        {hasPermission("ho-so-doi-tuong:delete") && (
+                          <IconButton
+                            icon={<TrashBinIcon />}
+                            tooltip="Xóa đối tượng"
+                            variant="delete"
+                            onClick={() => handleDelete(item.id)}
+                          />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -1,5 +1,12 @@
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6061';
+
+// Helper to get full image URL
+export const getImageUrl = (path: string) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${API_BASE_URL}${path}`;
+};
 
 // Helper function to get auth token
 const getAuthToken = () => {
@@ -7,6 +14,24 @@ const getAuthToken = () => {
     return localStorage.getItem('access_token');
   }
   return null;
+};
+
+// Helper function to filter out empty params
+const filterEmptyParams = (params?: any): Record<string, any> => {
+  if (!params) return {};
+  return Object.entries(params).reduce((acc, [key, value]) => {
+    if (value !== '' && value !== null && value !== undefined) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {} as Record<string, any>);
+};
+
+// Helper function to build query string
+const buildQueryString = (params?: any): string => {
+  const filtered = filterEmptyParams(params);
+  const query = new URLSearchParams(filtered).toString();
+  return query ? `?${query}` : '';
 };
 
 // Helper function to build headers
@@ -70,14 +95,28 @@ export const authApi = {
 
   getProfile: () =>
     apiRequest<{ statusCode: number; message: string; data: any }>('/auth/profile'),
+
+  updateProfile: (data: {
+    hoTen?: string;
+    email?: string;
+    soDienThoai?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }) =>
+    apiRequest<{ status: string; statusCode: number; message: string; data: any }>(
+      '/auth/profile',
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }
+    ),
 };
 
 // ===== HỒ SƠ ĐỐI TƯỢNG =====
 
 export const hoSoDoiTuongApi = {
   getAll: (params?: any) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest<any>(`/ho-so-doi-tuong?${query}`);
+    return apiRequest<any>(`/ho-so-doi-tuong${buildQueryString(params)}`);
   },
 
   getById: (id: string) =>
@@ -108,14 +147,36 @@ export const hoSoDoiTuongApi = {
 
   thongKeTrangThai: () =>
     apiRequest<any>('/ho-so-doi-tuong/thong-ke/trang-thai'),
+
+  uploadAnh: async (id: string, files: File[]) => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+    const response = await fetch(`${API_BASE_URL}/ho-so-doi-tuong/${id}/upload-anh`, {
+      method: 'POST',
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Network error' }));
+      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  },
 };
 
 // ===== HỒ SƠ VỤ VIỆC =====
 
 export const hoSoVuViecApi = {
   getAll: (params?: any) => {
-    const query = new URLSearchParams(params).toString();
-    return apiRequest<any>(`/ho-so-vu-viec?${query}`);
+    return apiRequest<any>(`/ho-so-vu-viec${buildQueryString(params)}`);
   },
 
   getById: (id: string) =>
@@ -270,6 +331,89 @@ export const baoCaoApi = {
     const query = new URLSearchParams(params).toString();
     return apiRequest<any>(`/bao-cao/tong-hop?${query}`);
   },
+
+  // Export APIs - Download file directly
+  exportExcel: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    const token = localStorage.getItem('access_token');
+    const url = `${API_BASE_URL}/bao-cao/export/excel?${query}`;
+    
+    // Create a hidden link and trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `bao-cao-${Date.now()}.xlsx`);
+    
+    // Add authorization header via fetch and create blob
+    return fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Export failed');
+        return response.blob();
+      })
+      .then((blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        link.href = blobUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      });
+  },
+
+  exportPDF: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    const token = localStorage.getItem('access_token');
+    const url = `${API_BASE_URL}/bao-cao/export/pdf?${query}`;
+    
+    return fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Export failed');
+        return response.blob();
+      })
+      .then((blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.setAttribute('download', `bao-cao-${Date.now()}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      });
+  },
+
+  exportWord: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    const token = localStorage.getItem('access_token');
+    const url = `${API_BASE_URL}/bao-cao/export/word?${query}`;
+    
+    return fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Export failed');
+        return response.blob();
+      })
+      .then((blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.setAttribute('download', `bao-cao-${Date.now()}.docx`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      });
+  },
 };
 
 // ===== DANH MỤC =====
@@ -299,26 +443,26 @@ export const danhMucApi = {
 export const nguoiDungApi = {
   getAll: (params?: any) => {
     const query = params ? new URLSearchParams(params).toString() : '';
-    return apiRequest<any>(`/users?${query}`);
+    return apiRequest<any>(`/users/list-all-user${query ? '?' + query : ''}`);
   },
 
   getById: (id: string) =>
-    apiRequest<any>(`/users/${id}`),
+    apiRequest<any>(`/users/detail-user?userId=${id}`),
 
   create: (data: any) =>
-    apiRequest<any>('/users', {
+    apiRequest<any>('/users/create-user', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   update: (id: string, data: any) =>
-    apiRequest<any>(`/users/${id}`, {
-      method: 'PATCH',
+    apiRequest<any>(`/users/update-user?userId=${id}`, {
+      method: 'PUT',
       body: JSON.stringify(data),
     }),
 
   delete: (id: string) =>
-    apiRequest<any>(`/users/${id}`, {
+    apiRequest<any>(`/users/delete-user?userId=${id}`, {
       method: 'DELETE',
     }),
 };
@@ -348,6 +492,35 @@ export const toimDanhApi = {
 
   delete: (id: string) =>
     apiRequest<any>(`/toim-danh/${id}`, {
+      method: 'DELETE',
+    }),
+};
+
+// ===== QUAN HỆ XÃ HỘI =====
+
+export const quanHeXaHoiApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<{ data: any[]; total: number }>(`/quan-he-xa-hoi/list-all?${query}`);
+  },
+
+  getById: (id: string) =>
+    apiRequest<any>(`/quan-he-xa-hoi/${id}`),
+
+  create: (data: any) =>
+    apiRequest<any>('/quan-he-xa-hoi/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    apiRequest<any>(`/quan-he-xa-hoi/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiRequest<any>(`/quan-he-xa-hoi/${id}`, {
       method: 'DELETE',
     }),
 };
@@ -418,6 +591,17 @@ export const rolesApi = {
     apiRequest<any>(`/roles/delete-role?roleId=${id}`, {
       method: 'DELETE',
     }),
+
+  // Lấy danh sách permissions của vai trò
+  getPermissions: (roleId: string) =>
+    apiRequest<any[]>(`/roles/${roleId}/permissions`),
+
+  // Gán permissions cho vai trò
+  assignPermissions: (roleId: string, permissionIds: string[]) =>
+    apiRequest<any>(`/roles/${roleId}/permissions`, {
+      method: 'POST',
+      body: JSON.stringify({ permissionIds }),
+    }),
 };
 
 // ===== QUYỀN =====
@@ -427,4 +611,202 @@ export const permissionsApi = {
     const query = params ? new URLSearchParams(params).toString() : '';
     return apiRequest<any[]>(`/permissions/list-all-permission?${query}`);
   },
+};
+
+// ===== CẤU HÌNH HỆ THỐNG =====
+
+export const cauHinhApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<{ data: any[]; total: number }>(`/cau-hinh/list-all?${query}`);
+  },
+
+  getAsObject: () =>
+    apiRequest<any>('/cau-hinh/as-object'),
+
+  getByKey: (key: string) =>
+    apiRequest<any>(`/cau-hinh/by-key/${key}`),
+
+  create: (data: any) =>
+    apiRequest<any>('/cau-hinh/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    apiRequest<any>(`/cau-hinh/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  updateMultiple: (data: any) =>
+    apiRequest<any>('/cau-hinh/update-multiple', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  initialize: () =>
+    apiRequest<any>('/cau-hinh/initialize', {
+      method: 'POST',
+    }),
+
+  delete: (id: string) =>
+    apiRequest<any>(`/cau-hinh/${id}`, {
+      method: 'DELETE',
+    }),
+};
+
+// ===== BACKUP =====
+
+export const backupApi = {
+  list: () =>
+    apiRequest<{ statusCode: number; message: string; data: any[]; total: number }>('/backup/list'),
+
+  manual: () =>
+    apiRequest<{ statusCode: number; message: string; data: any }>('/backup/manual', {
+      method: 'POST',
+    }),
+
+  restore: (backupFileName: string) =>
+    apiRequest<{ statusCode: number; message: string; data: any }>('/backup/restore', {
+      method: 'POST',
+      body: JSON.stringify({ backupFileName }),
+    }),
+};
+
+// ===== BIỂU MẪU =====
+
+export const bieuMauApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<{ data: any[]; total: number }>(`/bieu-mau/list-all?${query}`);
+  },
+
+  getById: (id: string) =>
+    apiRequest<any>(`/bieu-mau/${id}`),
+
+  create: (data: any) =>
+    apiRequest<any>('/bieu-mau/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    apiRequest<any>(`/bieu-mau/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiRequest<any>(`/bieu-mau/${id}`, {
+      method: 'DELETE',
+    }),
+};
+
+// ===== THÔNG BÁO =====
+
+export const thongBaoApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<{ data: any[]; total: number }>(`/thong-bao/list-all?${query}`);
+  },
+
+  getById: (id: string) =>
+    apiRequest<any>(`/thong-bao/${id}`),
+
+  create: (data: any) =>
+    apiRequest<any>('/thong-bao/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    apiRequest<any>(`/thong-bao/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  toggleStatus: (id: string) =>
+    apiRequest<any>(`/thong-bao/${id}/toggle-status`, {
+      method: 'PATCH',
+    }),
+
+  delete: (id: string) =>
+    apiRequest<any>(`/thong-bao/${id}`, {
+      method: 'DELETE',
+    }),
+};
+
+// ===== USER NOTIFICATIONS =====
+
+export const userNotificationApi = {
+  // Lấy danh sách thông báo của user hiện tại
+  getMyNotifications: (params?: { page?: number; pageSize?: number }) => {
+    const query = params ? new URLSearchParams(params as any).toString() : '';
+    return apiRequest<{
+      data: Array<{
+        id: string;
+        tieuDe: string;
+        noiDung: string;
+        loaiThongBao: string;
+        uu_tien: number;
+        ngayTao: string;
+        daDoc: boolean;
+        ngayDoc: string | null;
+      }>;
+      total: number;
+    }>(`/user-notifications/my-notifications?${query}`);
+  },
+
+  // Đếm số thông báo chưa đọc
+  getUnreadCount: () =>
+    apiRequest<{ unreadCount: number; totalCount: number }>(
+      '/user-notifications/unread-count'
+    ),
+
+  // Đánh dấu 1 thông báo là đã đọc
+  markAsRead: (id: string) =>
+    apiRequest<any>(`/user-notifications/${id}/mark-as-read`, {
+      method: 'PATCH',
+    }),
+
+  // Đánh dấu tất cả thông báo là đã đọc
+  markAllAsRead: () =>
+    apiRequest<any>('/user-notifications/mark-all-as-read', {
+      method: 'PATCH',
+    }),
+};
+
+// ===== ĐƠN VỊ TỔ CHỨC =====
+
+export const donViApi = {
+  getAll: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<any[]>(`/units/list-all-unit?${query}`);
+  },
+
+  getTree: (params?: any) => {
+    const query = params ? new URLSearchParams(params).toString() : '';
+    return apiRequest<any[]>(`/units/list-tree-unit?${query}`);
+  },
+
+  getById: (id: string) =>
+    apiRequest<any>(`/units/${id}`),
+
+  create: (data: any) =>
+    apiRequest<any>('/units/create-unit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: any) =>
+    apiRequest<any>(`/units/update-unit/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (unitId: string) =>
+    apiRequest<any>(`/units/delete-unit?unitId=${unitId}`, {
+      method: 'DELETE',
+    }),
 };

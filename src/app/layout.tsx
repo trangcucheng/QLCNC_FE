@@ -1,4 +1,3 @@
-import { Outfit } from 'next/font/google';
 import './globals.css';
 import "flatpickr/dist/flatpickr.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -9,10 +8,6 @@ import { AuthProvider } from '@/context/AuthContext';
 import { RootProvider } from '@/app/RootProvider';
 import ChatWidget from '@/components/ChatWidget';
 
-const outfit = Outfit({
-  subsets: ["latin"],
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${outfit.className} dark:bg-gray-900`}>
+      <body className="dark:bg-gray-900">
         <RootProvider>
           <AuthProvider>
             <ThemeProvider>

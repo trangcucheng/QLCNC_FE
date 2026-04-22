@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form, Input, Select, Upload, Button, message, Card } from "antd";
 import { UploadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,10 @@ export default function ThemTaiLieuPage() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState<any[]>([]);
+
+  useEffect(() => {
+    document.title = "Thêm mới Tài liệu | QLCNC";
+  }, []);
 
   const handleSubmit = async (values: any) => {
     try {

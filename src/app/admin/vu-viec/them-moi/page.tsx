@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { hoSoVuViecApi, hoSoDoiTuongApi, danhMucApi, nguoiDungApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { showSuccess } from "@/utils/sweetalert";
 
 export default function ThemVuViecPage() {
   const router = useRouter();
@@ -25,6 +26,10 @@ export default function ThemVuViecPage() {
     ketQuaXuLy: "",
     ghiChu: "",
   });
+
+  useEffect(() => {
+    document.title = "Thêm mới Vụ việc | QLCNC";
+  }, []);
 
   useEffect(() => {
     fetchDoiTuongs();
@@ -60,14 +65,21 @@ export default function ThemVuViecPage() {
     setLoading(true);
 
     try {
+      // Map frontend field names to backend DTO field names
       const submitData = {
-        ...formData,
+        soHoSo: formData.soHoSo,
+        tenVuViec: formData.tenVuViec,
+        moTaVuViec: formData.tomTatNoiDung, // Backend expects: moTaVuViec
         ngayXayRa: formData.ngayXayRa ? new Date(formData.ngayXayRa).toISOString() : undefined,
-        hoSoDoiTuongIds: selectedDoiTuongs,
+        diaChiXayRa: formData.diaDiemXayRa, // Backend expects: diaChiXayRa
+        mucDoViPham: formData.mucDoViPham,
+        trangThai: formData.trangThai,
+        ghiChu: formData.ghiChu,
+        doiTuongIds: selectedDoiTuongs, // Backend expects: doiTuongIds (not hoSoDoiTuongIds)
       };
 
       await hoSoVuViecApi.create(submitData);
-      alert("Thêm vụ việc thành công!");
+      showSuccess("Thêm vụ việc thành công!");
       router.push("/admin/vu-viec");
     } catch (err: any) {
       setError(err.message || "Có lỗi xảy ra khi thêm vụ việc");
@@ -79,7 +91,7 @@ export default function ThemVuViecPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Thêm Vụ Việc Mới</h1>
+        <h5 className="text-3xl font-bold text-gray-900">Thêm Vụ Việc Mới</h5>
         <p className="text-gray-600 mt-1">
           Nhập thông tin đầy đủ về vụ việc vi phạm pháp luật
         </p>

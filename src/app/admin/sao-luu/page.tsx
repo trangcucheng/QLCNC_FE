@@ -1,22 +1,69 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
+import { backupApi } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function BackupRestorePage() {
+  const { hasPermission } = useAuth();
   const [loading, setLoading] = useState(false);
   const [backupList, setBackupList] = useState<any[]>([]);
 
+  useEffect(() => {
+    document.title = "Sao lưu Dữ liệu | QLCNC";
+  }, []);
+
+  useEffect(() => {
+    fetchBackupList();
+  }, []);
+
+  const fetchBackupList = async () => {
+    try {
+      const response = await backupApi.list();
+      setBackupList(response.data || []);
+    } catch (error: any) {
+      console.error("Lỗi khi tải danh sách backup:", error);
+    }
+  };
+
   const handleBackup = async () => {
-    if (!confirm("Bạn có chắc chắn muốn sao lưu dữ liệu hệ thống?")) return;
+    const result = await Swal.fire({
+      title: "Xác nhận sao lưu dữ liệu",
+      text: "Bạn có chắc chắn muốn sao lưu toàn bộ dữ liệu hệ thống?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3b82f6",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: '<i class="fas fa-check"></i> Đồng ý',
+      cancelButtonText: '<i class="fas fa-times"></i> Hủy',
+      reverseButtons: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setLoading(true);
-      // TODO: Call API to backup
-      // await backupApi.manual();
-      alert("Sao lưu dữ liệu thành công! (Cần tích hợp API)");
+      const response = await backupApi.manual();
+      
+      await Swal.fire({
+        title: "Thành công!",
+        text: response.message || "Sao lưu dữ liệu thành công!",
+        icon: "success",
+        confirmButtonColor: "#10b981",
+        confirmButtonText: "OK",
+      });
+      
       // Refresh backup list
-    } catch (error) {
-      alert("Có lỗi khi sao lưu dữ liệu!");
+      fetchBackupList();
+    } catch (error: any) {
+      await Swal.fire({
+        title: "Lỗi!",
+        text: error.message || "Có lỗi khi sao lưu dữ liệu!",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+        confirmButtonText: "Đóng",
+      });
       console.error(error);
     } finally {
       setLoading(false);
@@ -24,20 +71,48 @@ export default function BackupRestorePage() {
   };
 
   const handleRestore = async (backupFileName: string) => {
-    if (
-      !confirm(
-        `CẢNH BÁO: Khôi phục dữ liệu sẽ thay thế toàn bộ dữ liệu hiện tại!\n\nBạn có chắc chắn muốn khôi phục từ: ${backupFileName}?`
-      )
-    )
-      return;
+    const result = await Swal.fire({
+      title: "⚠️ CẢNH BÁO QUAN TRỌNG",
+      html: `
+        <div class="text-left">
+          <p class="mb-3 font-semibold text-red-600">Khôi phục dữ liệu sẽ thay thế toàn bộ dữ liệu hiện tại!</p>
+          <p class="mb-2">Bạn có chắc chắn muốn khôi phục từ:</p>
+          <p class="font-mono bg-gray-100 p-2 rounded">${backupFileName}</p>
+          <p class="mt-3 text-sm text-gray-600">⚡ Thao tác này không thể hoàn tác!</p>
+        </div>
+      `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: '<i class="fas fa-exclamation-triangle"></i> Đồng ý khôi phục',
+      cancelButtonText: '<i class="fas fa-times"></i> Hủy',
+      reverseButtons: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setLoading(true);
-      // TODO: Call API to restore
-      // await backupApi.restore({ backupFileName });
-      alert("Khôi phục dữ liệu thành công! (Cần tích hợp API)");
-    } catch (error) {
-      alert("Có lỗi khi khôi phục dữ liệu!");
+      const response = await backupApi.restore(backupFileName);
+      
+      await Swal.fire({
+        title: "Hoàn tất!",
+        text: response.message || "Khôi phục dữ liệu thành công!",
+        icon: "success",
+        confirmButtonColor: "#10b981",
+        confirmButtonText: "OK",
+      });
+      
+      fetchBackupList();
+    } catch (error: any) {
+      await Swal.fire({
+        title: "Lỗi!",
+        text: error.message || "Có lỗi khi khôi phục dữ liệu!",
+        icon: "error",
+        confirmButtonColor: "#ef4444",
+        confirmButtonText: "Đóng",
+      });
       console.error(error);
     } finally {
       setLoading(false);
@@ -47,9 +122,9 @@ export default function BackupRestorePage() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h5 className="text-3xl font-bold text-gray-900">
           Sao lưu & Phục hồi dữ liệu
-        </h1>
+        </h5>
         <p className="text-gray-600 mt-1">
           Quản lý sao lưu và khôi phục dữ liệu hệ thống
         </p>
@@ -96,15 +171,17 @@ export default function BackupRestorePage() {
                 Tạo bản sao lưu toàn bộ cơ sở dữ liệu hiện tại. File sao lưu sẽ
                 được lưu trên máy chủ với tên bao gồm ngày giờ tạo.
               </p>
-              <button
-                onClick={handleBackup}
-                disabled={loading}
-                className={`px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                {loading ? "Đang sao lưu..." : "🔄 Sao lưu ngay"}
-              </button>
+              {hasPermission("backup:create") && (
+                <button
+                  onClick={handleBackup}
+                  disabled={loading}
+                  className={`px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {loading ? "Đang sao lưu..." : "🔄 Sao lưu ngay"}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -139,13 +216,15 @@ export default function BackupRestorePage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleRestore(backup.fileName)}
-                    disabled={loading}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-                  >
-                    🔄 Khôi phục
-                  </button>
+                  {hasPermission("backup:restore") && (
+                    <button
+                      onClick={() => handleRestore(backup.fileName)}
+                      disabled={loading}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                    >
+                      🔄 Khôi phục
+                    </button>
+                  )}
                   <button
                     disabled={loading}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
@@ -176,15 +255,6 @@ export default function BackupRestorePage() {
             • Bạn cũng có thể tải file sao lưu về máy để lưu trữ ngoại tuyến
           </li>
         </ul>
-      </div>
-
-      {/* Development Note */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <p className="text-sm text-yellow-800">
-          <strong>Lưu ý phát triển:</strong> Chức năng này cần tích hợp với API
-          backend tại <code>/backup/manual</code> và{" "}
-          <code>/backup/restore</code>. Hiện tại đang ở chế độ demo.
-        </p>
       </div>
     </div>
   );

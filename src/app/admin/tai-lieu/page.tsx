@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Table, Button, Input, Modal, Upload, message, Tag, Space, Card, Statistic, Row, Col } from "antd";
+import { useAuth } from "@/context/AuthContext";
 import { UploadOutlined, EyeOutlined, DeleteOutlined, DownloadOutlined, FileOutlined, FolderOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { taiLieuApi } from "@/lib/api";
@@ -19,10 +20,15 @@ interface TaiLieu {
 }
 
 export default function TaiLieuPage() {
+  const { hasPermission } = useAuth();
   const [data, setData] = useState<TaiLieu[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [thongKe, setThongKe] = useState<any>(null);
+
+  useEffect(() => {
+    document.title = "Tài liệu & Chứng cứ | QLCNC";
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -69,17 +75,19 @@ export default function TaiLieuPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản Lý Tài Liệu</h1>
+          <h5 className="text-3xl font-bold text-gray-900">Quản Lý Tài Liệu</h5>
           <p className="text-gray-600 mt-1">Quản lý tài liệu và chứng cứ pháp lý</p>
         </div>
-        <Button
-          type="primary"
-          icon={<UploadOutlined />}
-          href="/admin/tai-lieu/them-moi"
-          size="large"
-        >
-          Tải lên Tài liệu
-        </Button>
+        {hasPermission("tai-lieu:create") && (
+          <Button
+            type="primary"
+            icon={<UploadOutlined />}
+            href="/admin/tai-lieu/them-moi"
+            size="large"
+          >
+            Tải lên Tài liệu
+          </Button>
+        )}
       </div>
 
       {/* Thống kê tài liệu */}

@@ -13,6 +13,10 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
+    document.title = "Dashboard - Tổng quan | QLCNC";
+  }, []);
+
+  useEffect(() => {
     fetchDashboard();
   }, []);
 
@@ -50,7 +54,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Tổng Quan</h1>
+          <h5 className="text-3xl font-bold text-gray-900">Thống kê tổng quan</h5>
           <p className="text-gray-600 mt-1">
             Thống kê và báo cáo tình hình vi phạm pháp luật
           </p>
@@ -143,9 +147,9 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Vụ Việc Theo Mức Độ */}
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <h6 className="text-xl font-bold text-gray-900 mb-4">
             Vụ Việc Theo Mức Độ Vi Phạm
-          </h2>
+          </h6>
           <div className="space-y-3">
             {vuViecTheoMucDo.map((item) => {
               const total = vuViecTheoMucDo.reduce((sum, i) => sum + i.soLuong, 0);
@@ -180,9 +184,9 @@ export default function DashboardPage() {
 
         {/* Vụ Việc Theo Trạng Thái */}
         <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <h6 className="text-xl font-bold text-gray-900 mb-4">
             Vụ Việc Theo Trạng Thái
-          </h2>
+          </h6>
           <div className="space-y-3">
             {vuViecTheoTrangThai.map((item) => {
               const total = vuViecTheoTrangThai.reduce((sum, i) => sum + i.soLuong, 0);

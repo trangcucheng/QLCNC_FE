@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { hoSoDoiTuongApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { Upload, message } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import type { UploadFile } from "antd";
 
 export default function ThemDoiTuongPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [formData, setFormData] = useState({
     hoTen: "",
     tenGoiKhac: "",
@@ -38,6 +42,10 @@ export default function ThemDoiTuongPage() {
     ghiChu: "",
   });
 
+  useEffect(() => {
+    document.title = "Thêm mới Đối tượng | QLCNC";
+  }, []);
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -60,20 +68,87 @@ export default function ThemDoiTuongPage() {
         ngayCapCMND_CCCD: formData.ngayCapCMND_CCCD ? new Date(formData.ngayCapCMND_CCCD).toISOString() : undefined,
       };
 
-      await hoSoDoiTuongApi.create(submitData);
-      alert("Thêm đối tượng thành công!");
+      console.log('[Create] Submitting data:', submitData);
+      const response = await hoSoDoiTuongApi.create(submitData);
+      console.log('[Create] Response:', response);
+      const doiTuongId = response.data.id;
+
+      // Upload ảnh nếu có
+      if (fileList.length > 0) {
+        try {
+          console.log('[Upload] Starting upload for', fileList.length, 'files');
+          const files = fileList.map(file => file.originFileObj as File);
+          const uploadResponse = await hoSoDoiTuongApi.uploadAnh(doiTuongId, files);
+          console.log('[Upload] Upload response:', uploadResponse);
+          message.success(`Thêm đối tượng thành công! Đã upload ${fileList.length} ảnh.`);
+        } catch (uploadErr: any) {
+          console.error('[Upload] Error:', uploadErr);
+          message.warning(`Đã tạo đối tượng nhưng có lỗi khi upload ảnh: ${uploadErr.message}`);
+        }
+      } else {
+        message.success("Thêm đối tượng thành công!");
+      }
+
       router.push("/admin/doi-tuong");
     } catch (err: any) {
+      console.error('[Create] Error:', err);
       setError(err.message || "Có lỗi xảy ra khi thêm đối tượng");
+      message.error(err.message || "Có lỗi xảy ra khi thêm đối tượng");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleUploadChange = ({ fileList: newFileList }: any) => {
+    // Validate file types
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    const invalidFiles = newFileList.filter((file: any) => {
+      const fileType = file.type || file.originFileObj?.type;
+      return fileType && !validTypes.includes(fileType);
+    });
+
+    if (invalidFiles.length > 0) {
+      message.error('Chỉ cho phép upload file ảnh (JPG, PNG, WEBP)!');
+      // Remove invalid files
+      const validFiles = newFileList.filter((file: any) => {
+        const fileType = file.type || file.originFileObj?.type;
+        return !fileType || validTypes.includes(fileType);
+      });
+      setFileList(validFiles);
+      return;
+    }
+
+    // Validate file sizes (5MB max)
+    const oversizedFiles = newFileList.filter((file: any) => {
+      const size = file.size || file.originFileObj?.size;
+      return size && size > 5 * 1024 * 1024;
+    });
+
+    if (oversizedFiles.length > 0) {
+      message.error('Kích thước file không được vượt quá 5MB!');
+      // Remove oversized files
+      const validFiles = newFileList.filter((file: any) => {
+        const size = file.size || file.originFileObj?.size;
+        return !size || size <= 5 * 1024 * 1024;
+      });
+      setFileList(validFiles);
+      return;
+    }
+
+    setFileList(newFileList);
+  };
+
+  const uploadButton = (
+    <div>
+      <PlusOutlined />
+      <div style={{ marginTop: 8 }}>Tải ảnh lên</div>
+    </div>
+  );
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Thêm Đối Tượng Mới</h1>
+        <h5 className="text-3xl font-bold text-gray-900">Thêm Đối Tượng Mới</h5>
         <p className="text-gray-600 mt-1">
           Nhập thông tin đầy đủ về đối tượng vi phạm pháp luật
         </p>
@@ -482,6 +557,27 @@ export default function ThemDoiTuongPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Upload ảnh */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Ảnh đối tượng</h2>
+          <div>
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              onChange={handleUploadChange}
+              beforeUpload={() => false}
+              multiple
+              accept="image/*"
+              maxCount={10}
+            >
+              {fileList.length >= 10 ? null : uploadButton}
+            </Upload>
+            <p className="text-sm text-gray-500 mt-2">
+              Tải lên tối đa 10 ảnh. <strong>Chỉ chấp nhận:</strong> JPG, PNG, WEBP. <strong>Kích thước tối đa:</strong> 5MB/ảnh.
+            </p>
           </div>
         </div>
 

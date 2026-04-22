@@ -9,8 +9,13 @@ import {
   getMucDoViPhamLabel,
   getMucDoViPhamColor,
 } from "@/types";
+import IconButton from "@/components/ui/IconButton";
+import { EyeIcon, PencilIcon, TrashBinIcon } from "@/icons";
+import { useAuth } from "@/context/AuthContext";
+import { showSuccess, showError, showConfirm } from "@/utils/sweetalert";
 
 export default function VuViecPage() {
+  const { hasPermission } = useAuth();
   const [data, setData] = useState<HoSoVuViec[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -27,6 +32,10 @@ export default function VuViecPage() {
     page: 1,
     limit: 10,
   });
+
+  useEffect(() => {
+    document.title = "Quản lý Vụ việc | QLCNC";
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -54,14 +63,15 @@ export default function VuViecPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa vụ việc này?")) return;
+    const confirmed = await showConfirm("Bạn có chắc chắn muốn xóa vụ việc này?");
+    if (!confirmed) return;
 
     try {
       await hoSoVuViecApi.delete(id);
-      alert("Xóa thành công!");
+      showSuccess("Xóa thành công!");
       fetchData();
     } catch (error) {
-      alert("Có lỗi xảy ra khi xóa!");
+      showError("Có lỗi xảy ra khi xóa!");
       console.error(error);
     }
   };
@@ -71,17 +81,19 @@ export default function VuViecPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản Lý Vụ Việc</h1>
+          <h5 className="text-3xl font-bold text-gray-900">Quản Lý Vụ Việc</h5>
           <p className="text-gray-600 mt-1">
             Quản lý hồ sơ vụ việc vi phạm pháp luật
           </p>
         </div>
-        <a
-          href="/admin/vu-viec/them-moi"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          ➕ Thêm Vụ Việc Mới
-        </a>
+        {hasPermission("ho-so-vu-viec:create") && (
+          <a
+            href="/admin/vu-viec/them-moi"
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            ➕ Thêm Vụ Việc Mới
+          </a>
+        )}
       </div>
 
       {/* Search & Filter */}
@@ -229,25 +241,31 @@ export default function VuViecPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.canBoXuLy || "-"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <a
-                        href={`/admin/vu-viec/${item.id}`}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        👁️ Xem
-                      </a>
-                      <a
-                        href={`/admin/vu-viec/${item.id}/chinh-sua`}
-                        className="text-yellow-600 hover:text-yellow-900"
-                      >
-                        ✏️ Sửa
-                      </a>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        🗑️ Xóa
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex gap-2">
+                        <IconButton
+                          icon={<EyeIcon />}
+                          tooltip="Xem chi tiết"
+                          variant="view"
+                          href={`/admin/vu-viec/${item.id}`}
+                        />
+                        {hasPermission("ho-so-vu-viec:update") && (
+                          <IconButton
+                            icon={<PencilIcon />}
+                            tooltip="Chỉnh sửa"
+                            variant="edit"
+                            href={`/admin/vu-viec/${item.id}/chinh-sua`}
+                          />
+                        )}
+                        {hasPermission("ho-so-vu-viec:delete") && (
+                          <IconButton
+                            icon={<TrashBinIcon />}
+                            tooltip="Xóa vụ việc"
+                            variant="delete"
+                            onClick={() => handleDelete(item.id)}
+                          />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

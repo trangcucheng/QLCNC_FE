@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { nguoiDungApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { showSuccess, showError, showWarning } from "@/utils/sweetalert";
 
 export default function ThemNguoiDungPage() {
   const router = useRouter();
@@ -16,6 +17,10 @@ export default function ThemNguoiDungPage() {
     loaiNguoiDung: "CAN_BO_NGHIEP_VU",
     trangThaiHoatDong: true,
   });
+
+  useEffect(() => {
+    document.title = "Thêm mới Người dùng | QLCNC";
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -35,17 +40,17 @@ export default function ThemNguoiDungPage() {
 
     // Validation
     if (!formData.hoTen || !formData.email || !formData.matKhau) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      showWarning("Vui lòng điền đầy đủ thông tin bắt buộc!");
       return;
     }
 
     if (formData.matKhau !== formData.xacNhanMatKhau) {
-      alert("Mật khẩu xác nhận không khớp!");
+      showWarning("Mật khẩu xác nhận không khớp!");
       return;
     }
 
     if (formData.matKhau.length < 6) {
-      alert("Mật khẩu phải có ít nhất 6 ký tự!");
+      showWarning("Mật khẩu phải có ít nhất 6 ký tự!");
       return;
     }
 
@@ -53,11 +58,11 @@ export default function ThemNguoiDungPage() {
       setLoading(true);
       const { xacNhanMatKhau, ...submitData } = formData;
       await nguoiDungApi.create(submitData);
-      alert("Thêm người dùng thành công!");
+      showSuccess("Thêm người dùng thành công!");
       router.push("/admin/nguoi-dung");
     } catch (error: any) {
       console.error("Lỗi khi thêm người dùng:", error);
-      alert(error.message || "Có lỗi khi thêm người dùng!");
+      showError(error.message || "Có lỗi khi thêm người dùng!");
     } finally {
       setLoading(false);
     }
@@ -73,7 +78,7 @@ export default function ThemNguoiDungPage() {
         >
           ← Quay lại
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">Thêm người dùng mới</h1>
+        <h5 className="text-3xl font-bold text-gray-900">Thêm người dùng mới</h5>
         <p className="text-gray-600 mt-1">
           Tạo tài khoản người dùng mới cho hệ thống
         </p>

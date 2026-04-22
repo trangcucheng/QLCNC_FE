@@ -4,7 +4,7 @@
 
 @theme {
   --font-*: initial;
-  --font-outfit: Outfit, sans-serif;
+  --font-outfit: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
@@ -190,54 +190,64 @@
   body {
     @apply relative font-normal font-outfit z-1 bg-gray-50;
   }
+  
+  /* Override default link styles in navigation */
+  aside a,
+  nav a {
+    text-decoration: none !important;
+  }
 }
 
 @utility menu-item {
-  @apply relative flex items-center w-full gap-3 px-3 py-2 font-medium rounded-lg text-theme-sm;
+  @apply relative flex items-center w-full gap-2.5 px-2 py-2.5 font-medium rounded-lg text-sm transition-all duration-200 no-underline;
 }
 
 @utility menu-item-active {
-  @apply bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400;
+  @apply bg-gray-200 text-gray-900 font-semibold dark:bg-gray-700 dark:text-white no-underline;
 }
 
 @utility menu-item-inactive {
-  @apply text-gray-700 hover:bg-gray-100 group-hover:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300;
+  @apply text-gray-900 hover:bg-gray-100 hover:text-gray-900 hover:shadow-sm dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-200 no-underline;
 }
 
 @utility menu-item-icon {
-  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400;
+  @apply text-gray-600 group-hover:text-gray-900 dark:text-gray-400 transition-colors duration-200 w-5 h-5;
 }
 
 @utility menu-item-icon-active {
-  @apply text-brand-500 dark:text-brand-400;
+  @apply text-gray-900 dark:text-white;
 }
 
 @utility menu-item-icon-inactive {
-  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300;
+  @apply text-gray-600 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-200;
 }
 
 @utility menu-item-arrow {
-  @apply relative;
+  @apply relative transition-transform duration-200;
 }
 
 @utility menu-item-arrow-active {
-  @apply rotate-180 text-brand-500 dark:text-brand-400;
+  @apply rotate-180 text-gray-900 dark:text-white;
 }
 
 @utility menu-item-arrow-inactive {
-  @apply text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300;
+  @apply text-gray-600 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-200;
+}
+
+@utility menu-item-text {
+  @apply no-underline;
 }
 
 @utility menu-dropdown-item {
-  @apply relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-theme-sm font-medium;
+  @apply relative flex items-center gap-2.5 rounded-lg px-2 py-2.5 text-sm font-medium transition-all duration-200 no-underline;
 }
 
 @utility menu-dropdown-item-active {
-  @apply bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400;
+  @apply bg-gray-200 text-gray-900 font-semibold dark:bg-gray-700 dark:text-white no-underline;
 }
 
 @utility menu-dropdown-item-inactive {
-  @apply text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5;
+  @apply text-gray-900 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-200 no-underline;
 }
 
 @utility menu-dropdown-badge {
@@ -250,6 +260,33 @@
 
 @utility menu-dropdown-badge-inactive {
   @apply bg-brand-50 group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/20;
+}
+
+/* Force menu links to use their parent utility class colors, not browser blue */
+a.menu-item-inactive,
+a.menu-item-inactive:link,
+a.menu-item-inactive:visited,
+a.menu-item-inactive:hover {
+  color: rgb(17 24 39) !important; /* gray-900 */
+}
+
+a.menu-item-active,
+a.menu-item-active:link,
+a.menu-item-active:visited {
+  color: rgb(17 24 39) !important; /* gray-900 */
+}
+
+a.menu-dropdown-item-inactive,
+a.menu-dropdown-item-inactive:link,
+a.menu-dropdown-item-inactive:visited,
+a.menu-dropdown-item-inactive:hover {
+  color: rgb(17 24 39) !important; /* gray-900 */
+}
+
+a.menu-dropdown-item-active,
+a.menu-dropdown-item-active:link,
+a.menu-dropdown-item-active:visited {
+  color: rgb(17 24 39) !important; /* gray-900 */
 }
 
 @utility no-scrollbar {

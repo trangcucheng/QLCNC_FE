@@ -1,9 +1,10 @@
 "use client";
-import React, { useEffect, useRef, useState,useCallback } from "react";
+import React, { useEffect, useRef, useState,useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { useAuth } from "../context/AuthContext";
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -26,41 +27,50 @@ type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  permission?: string | string[]; // Permissions required to view this menu
+  subItems?: { 
+    name: string; 
+    path: string; 
+    pro?: boolean; 
+    new?: boolean;
+    permission?: string | string[];
+  }[];
 };
 
-const navItems: NavItem[] = [
-  // US01, US12 - Dashboard & Tổng quan
+const ALL_NAV_ITEMS: NavItem[] = [
+  // US01, US12 - Dashboard & Tổng quan (All users)
   {
     icon: <GridIcon />,
-    name: "Dashboard",
+    name: "Trang chủ",
     subItems: [{ name: "Tổng quan", path: "/admin/dashboard", pro: false }],
   },
 
-  // US03 - Tìm kiếm thông tin
+  // US03 - Tìm kiếm thông tin (All users)
   {
     icon: <GridIcon />,
     name: "Tìm kiếm",
     path: "/admin/tim-kiem",
   },
 
-  // US04, US14, US15 - Quản lý hồ sơ đối tượng
+  // US04, US14, US15 - Quản lý hồ sơ đối tượng (Lãnh đạo xem, Cán bộ CRUD)
   {
     name: "Quản lý Đối tượng",
     icon: <UserCircleIcon />,
+    permission: "ho-so-doi-tuong:read",
     subItems: [
-      { name: "Danh sách", path: "/admin/doi-tuong", pro: false },
-      { name: "Thêm mới", path: "/admin/doi-tuong/them-moi", pro: false },
+      { name: "Danh sách", path: "/admin/doi-tuong", pro: false, permission: "ho-so-doi-tuong:read" },
+      { name: "Thêm mới", path: "/admin/doi-tuong/them-moi", pro: false, permission: "ho-so-doi-tuong:create" },
     ],
   },
 
-  // US05, US09 - Quản lý hồ sơ vụ việc
+  // US05, US09 - Quản lý hồ sơ vụ việc (Lãnh đạo xem, Cán bộ CRUD)
   {
     name: "Quản lý Vụ việc",
     icon: <ListIcon />,
+    permission: "ho-so-vu-viec:read",
     subItems: [
-      { name: "Danh sách", path: "/admin/vu-viec", pro: false },
-      { name: "Thêm mới", path: "/admin/vu-viec/them-moi", pro: false },
+      { name: "Danh sách", path: "/admin/vu-viec", pro: false, permission: "ho-so-vu-viec:read" },
+      { name: "Thêm mới", path: "/admin/vu-viec/them-moi", pro: false, permission: "ho-so-vu-viec:create" },
     ],
   },
 
@@ -68,9 +78,10 @@ const navItems: NavItem[] = [
   {
     name: "Tài liệu & Chứng cứ",
     icon: <FileIcon />,
+    permission: "tai-lieu:read",
     subItems: [
-      { name: "Kho tài liệu", path: "/admin/tai-lieu", pro: false },
-      { name: "Tải lên", path: "/admin/tai-lieu/them-moi", pro: false },
+      { name: "Kho tài liệu", path: "/admin/tai-lieu", pro: false, permission: "tai-lieu:read" },
+      { name: "Tải lên", path: "/admin/tai-lieu/them-moi", pro: false, permission: "tai-lieu:create" },
     ],
   },
 
@@ -78,9 +89,10 @@ const navItems: NavItem[] = [
   {
     name: "Báo cáo & Thống kê",
     icon: <PieChartIcon />,
+    permission: "bao-cao:read",
     subItems: [
-      { name: "Thống kê tổng hợp", path: "/admin/bao-cao", pro: false },
-      { name: "Xuất báo cáo", path: "/admin/xuat-bao-cao", pro: false },
+      { name: "Thống kê tổng hợp", path: "/admin/bao-cao", pro: false, permission: "bao-cao:read" },
+      { name: "Xuất báo cáo", path: "/admin/xuat-bao-cao", pro: false, permission: "bao-cao:export" },
     ],
   },
 
@@ -88,22 +100,33 @@ const navItems: NavItem[] = [
   {
     icon: <ChatIcon />,
     name: "Chatbot",
+    permission: "chatbot:read",
     subItems: [
       {
         name: "Quản lý Tài liệu",
         path: "/admin/chatbot-documents",
         pro: false,
+        permission: "chatbot:manage",
       },
     ],
   },
 ];
 
-const othersItems: NavItem[] = [
+const ALL_OTHERS_ITEMS: NavItem[] = [
   // US10 - Quản lý danh mục tội danh
   {
     icon: <TableIcon />,
     name: "Danh mục Tội danh",
     path: "/admin/toi-danh",
+    permission: "toi-danh:read",
+  },
+
+  // Quan hệ xã hội
+  {
+    icon: <UserCircleIcon />,
+    name: "Quan hệ xã hội",
+    path: "/admin/quan-he-xa-hoi",
+    permission: "quan-he-xa-hoi:read",
   },
 
   // US11 - Quản lý đơn vị hành chính
@@ -111,14 +134,32 @@ const othersItems: NavItem[] = [
     icon: <GridIcon />,
     name: "Đơn vị Hành chính",
     path: "/admin/don-vi",
+    permission: "don-vi:read",
+  },
+
+  // Biểu mẫu
+  {
+    icon: <FileIcon />,
+    name: "Biểu mẫu",
+    path: "/admin/bieu-mau",
+    permission: "bieu-mau:read",
+  },
+
+  // Thông báo
+  {
+    icon: <DocsIcon />,
+    name: "Thông báo",
+    path: "/admin/thong-bao",
+    permission: "thong-bao:read",
   },
 
   // US02 - Quản lý tài khoản người dùng
   {
     icon: <UserCircleIcon />,
     name: "Quản lý Người dùng",
+    permission: "VIEW_USER",
     subItems: [
-      { name: "Danh sách người dùng", path: "/admin/nguoi-dung", pro: false },
+      { name: "Danh sách người dùng", path: "/admin/nguoi-dung", pro: false, permission: "VIEW_USER" },
     ],
   },
 
@@ -127,6 +168,7 @@ const othersItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Vai trò & Quyền hạn",
     path: "/admin/vai-tro",
+    permission: "VIEW_ROLE",
   },
 
   // US20, US21 - Sao lưu & Phục hồi dữ liệu
@@ -134,6 +176,7 @@ const othersItems: NavItem[] = [
     icon: <FileIcon />,
     name: "Sao lưu Dữ liệu",
     path: "/admin/sao-luu",
+    permission: "backup:read",
   },
 
   // Cấu hình hệ thống
@@ -141,18 +184,59 @@ const othersItems: NavItem[] = [
     icon: <PlugInIcon />,
     name: "Cấu hình Hệ thống",
     path: "/admin/cau-hinh",
+    permission: "VIEW_CAU_HINH",
   },
 ];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const { hasPermission, isAdmin } = useAuth();
+
+  // Filter menu items based on user permissions
+  const filterMenuItems = useCallback((items: NavItem[]): NavItem[] => {
+    return items
+      .filter((item) => {
+        // If no permission required, show to all users
+        if (!item.permission) return true;
+        
+        // Admin sees everything
+        if (isAdmin()) return true;
+        
+        // Check permission
+        return hasPermission(item.permission);
+      })
+      .map((item) => {
+        // Filter subitems if they exist
+        if (item.subItems) {
+          const filteredSubItems = item.subItems.filter((subItem) => {
+            if (!subItem.permission) return true;
+            if (isAdmin()) return true;
+            return hasPermission(subItem.permission);
+          });
+          
+          // Only show parent if it has visible subitems
+          if (filteredSubItems.length === 0) return null;
+          
+          return {
+            ...item,
+            subItems: filteredSubItems,
+          };
+        }
+        return item;
+      })
+      .filter((item): item is NavItem => item !== null);
+  }, [hasPermission, isAdmin]);
+
+  // Memoize filtered menu items
+  const navItems = useMemo(() => filterMenuItems(ALL_NAV_ITEMS), [filterMenuItems]);
+  const othersItems = useMemo(() => filterMenuItems(ALL_OTHERS_ITEMS), [filterMenuItems]);
 
   const renderMenuItems = (
     navItems: NavItem[],
     menuType: "main" | "others"
   ) => (
-    <ul className="flex flex-col gap-4">
+    <ul className="flex flex-col gap-2" style={{paddingLeft: "1rem"}}>
       {navItems.map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems ? (
@@ -178,15 +262,15 @@ const AppSidebar: React.FC = () => {
                 {nav.icon}
               </span>
               {(isExpanded || isHovered || isMobileOpen) && (
-                <span className={`menu-item-text`}>{nav.name}</span>
+                <span className={`menu-item-text font-semibold`}>{nav.name}</span>
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200  ${
+                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${
                     openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
-                      ? "rotate-180 text-brand-500"
-                      : ""
+                      ? "menu-item-arrow-active"
+                      : "menu-item-arrow-inactive"
                   }`}
                 />
               )}
@@ -209,7 +293,7 @@ const AppSidebar: React.FC = () => {
                   {nav.icon}
                 </span>
                 {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className={`menu-item-text`}>{nav.name}</span>
+                  <span className={`menu-item-text font-semibold`}>{nav.name}</span>
                 )}
               </Link>
             )
@@ -227,7 +311,7 @@ const AppSidebar: React.FC = () => {
                     : "0px",
               }}
             >
-              <ul className="mt-2 space-y-1 ml-9">
+              <ul className="custom-ul mt-2 space-y-1 ml-4" style={{paddingLeft: "1rem"}}>
                 {nav.subItems.map((subItem) => (
                   <li key={subItem.name}>
                     <Link
@@ -310,7 +394,7 @@ const AppSidebar: React.FC = () => {
     if (!submenuMatched) {
       setOpenSubmenu(null);
     }
-  }, [pathname,isActive]);
+  }, [pathname, isActive, navItems, othersItems]);
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened
@@ -340,13 +424,13 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-3 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 shadow-lg
         ${
           isExpanded || isMobileOpen
-            ? "w-[290px]"
+            ? "w-[280px]"
             : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
+            ? "w-[280px]"
+            : "w-[80px]"
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
@@ -354,7 +438,7 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex  ${
+        className={`py-6 flex px-2 ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
@@ -365,14 +449,14 @@ const AppSidebar: React.FC = () => {
                 className="dark:hidden"
                 src="/images/logo/logo.svg"
                 alt="Logo"
-                width={150}
+                width={120}
                 height={40}
               />
               <Image
                 className="hidden dark:block"
                 src="/images/logo/logo-dark.svg"
                 alt="Logo"
-                width={150}
+                width={120}
                 height={40}
               />
             </>
@@ -388,13 +472,13 @@ const AppSidebar: React.FC = () => {
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <div>
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+              {/* <h2
+                className={`mb-3 text-xs font-bold uppercase flex leading-[20px] tracking-wider text-gray-500 dark:text-gray-400 ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
-                    : "justify-start"
+                    : "justify-start px-2"
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
@@ -402,29 +486,29 @@ const AppSidebar: React.FC = () => {
                 ) : (
                   <HorizontaLDots />
                 )}
-              </h2>
+              </h2> */}
               {renderMenuItems(navItems, "main")}
             </div>
 
             <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+              {/* <h2
+                className={`mb-3 text-xs font-bold uppercase flex leading-[20px] tracking-wider text-gray-500 dark:text-gray-400 ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
-                    : "justify-start"
+                    : "justify-start px-2"
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
+                  "Quản lý hệ thống"
                 ) : (
                   <HorizontaLDots />
                 )}
-              </h2>
+              </h2> */}
               {renderMenuItems(othersItems, "others")}
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
+        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
       </div>
     </aside>
   );

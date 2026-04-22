@@ -5,6 +5,9 @@ import { Tabs, Table, Button, Input, Modal, Form, message, Space, Transfer, Card
 import { PlusOutlined, EditOutlined, DeleteOutlined, KeyOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { rolesApi, permissionsApi } from "@/lib/api";
+import IconButton from "@/components/ui/IconButton";
+import { PencilIcon, TrashBinIcon } from "@/icons";
+import { useAuth } from "@/context/AuthContext";
 
 const { TabPane } = Tabs;
 
@@ -25,6 +28,7 @@ interface Quyen {
 }
 
 export default function VaiTroPage() {
+  const { hasPermission } = useAuth();
   const [vaiTroData, setVaiTroData] = useState<VaiTro[]>([]);
   const [quyenData, setQuyenData] = useState<Quyen[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,6 +39,10 @@ export default function VaiTroPage() {
   const [selectedVaiTro, setSelectedVaiTro] = useState<VaiTro | null>(null);
   const [targetKeys, setTargetKeys] = useState<string[]>([]);
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    document.title = "Vai trò & Quyền hạn | QLCNC";
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -96,23 +104,26 @@ export default function VaiTroPage() {
   const handlePhanQuyen = async (record: VaiTro) => {
     setSelectedVaiTro(record);
     try {
-      // TODO: Backend needs endpoint to get role's permissions
-      // For now, set empty array
-      setTargetKeys([]);
+      const permissions = await rolesApi.getPermissions(record.id);
+      const permissionIds = permissions.map((p: any) => p.id);
+      setTargetKeys(permissionIds);
       setIsPhanQuyenModalOpen(true);
     } catch (error) {
       console.error("Lỗi khi tải quyền của vai trò:", error);
+      message.error("Không thể tải quyền của vai trò");
       setTargetKeys([]);
       setIsPhanQuyenModalOpen(true);
     }
   };
 
   const handleSavePhanQuyen = async () => {
+    if (!selectedVaiTro) return;
+    
     try {
-      // TODO: Backend needs endpoint to assign permissions to role
-      // await rolesApi.assignPermissions(selectedVaiTro!.id, targetKeys);
+      await rolesApi.assignPermissions(selectedVaiTro.id, targetKeys);
       message.success("Phân quyền thành công");
       setIsPhanQuyenModalOpen(false);
+      fetchData(); // Refresh data
     } catch (error: any) {
       message.error(error.message || "Có lỗi xảy ra");
       console.error(error);
@@ -147,36 +158,42 @@ export default function VaiTroPage() {
     {
       title: "Thao tác",
       key: "actions",
-      width: 220,
+      width: 160,
       render: (_, record) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<KeyOutlined />}
-            onClick={() => handlePhanQuyen(record)}
-          >
-            Phân quyền
-          </Button>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setEditingVaiTro(record);
-              form.setFieldsValue(record);
-              setIsVaiTroModalOpen(true);
-            }}
-          >
-            Sửa
-          </Button>
-          <Button
-            type="link"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDeleteVaiTro(record.id)}
-          >
-            Xóa
-          </Button>
-        </Space>
+        <div className="flex gap-2">
+          {hasPermission("ASSIGN_ROLE") && (
+            <IconButton
+              icon={
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                </svg>
+              }
+              tooltip="Phân quyền"
+              variant="primary"
+              onClick={() => handlePhanQuyen(record)}
+            />
+          )}
+          {hasPermission("UPDATE_ROLE") && (
+            <IconButton
+              icon={<PencilIcon />}
+              tooltip="Chỉnh sửa"
+              variant="edit"
+              onClick={() => {
+                setEditingVaiTro(record);
+                form.setFieldsValue(record);
+                setIsVaiTroModalOpen(true);
+              }}
+            />
+          )}
+          {hasPermission("DELETE_ROLE") && (
+            <IconButton
+              icon={<TrashBinIcon />}
+              tooltip="Xóa vai trò"
+              variant="delete"
+              onClick={() => handleDeleteVaiTro(record.id)}
+            />
+          )}
+        </div>
       ),
     },
   ];
@@ -211,7 +228,7 @@ export default function VaiTroPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Vai Trò & Quyền Hạn</h1>
+          <h5 className="text-3xl font-bold text-gray-900">Vai Trò & Quyền Hạn</h5>
           <p className="text-gray-600 mt-1">Quản lý vai trò và phân quyền hệ thống</p>
         </div>
       </div>
@@ -220,17 +237,19 @@ export default function VaiTroPage() {
         <TabPane tab="Vai Trò" key="vai-tro">
           <Card
             extra={
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setEditingVaiTro(null);
-                  form.resetFields();
-                  setIsVaiTroModalOpen(true);
-                }}
-              >
-                Thêm Vai Trò
-              </Button>
+              hasPermission("CREATE_ROLE") && (
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setEditingVaiTro(null);
+                    form.resetFields();
+                    setIsVaiTroModalOpen(true);
+                  }}
+                >
+                  Thêm Vai Trò
+                </Button>
+              )
             }
           >
             <Table

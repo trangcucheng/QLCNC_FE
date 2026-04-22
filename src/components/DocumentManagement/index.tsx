@@ -38,6 +38,7 @@ import {
   uploadWithProgress,
 } from '../../api/chatbotDocuments';
 import styles from './DocumentManagement.module.css';
+import { useAuth } from '@/context/AuthContext';
 
 // Types
 interface Document {
@@ -57,6 +58,7 @@ interface FormValues {
 }
 
 const DocumentManagement: FC = () => {
+  const { hasPermission } = useAuth();
   // State
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(false);
@@ -344,15 +346,17 @@ const DocumentManagement: FC = () => {
             </Button>
           </Tooltip>
 
-          <Tooltip title="Sửa">
-            <Button
-              type="text"
-              size="small"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-              disabled={editingId === record.id || uploading}
-            />
-          </Tooltip>
+          {hasPermission("chatbot:manage") && (
+            <Tooltip title="Sửa">
+              <Button
+                type="text"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
+                disabled={editingId === record.id || uploading}
+              />
+            </Tooltip>
+          )}
 
           <Tooltip title="Tải xuống">
             <Button
@@ -375,15 +379,17 @@ const DocumentManagement: FC = () => {
             </Tooltip>
           )}
 
-          <Popconfirm
-            title="Xóa tài liệu?"
-            description="Hành động này không thể hoàn tác."
-            onConfirm={() => handleDelete(record.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}>
-            <Button type="text" danger size="small" icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {hasPermission("chatbot:manage") && (
+            <Popconfirm
+              title="Xóa tài liệu?"
+              description="Hành động này không thể hoàn tác."
+              onConfirm={() => handleDelete(record.id)}
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{ danger: true }}>
+              <Button type="text" danger size="small" icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
         </Space>
       ),
     },
@@ -395,12 +401,14 @@ const DocumentManagement: FC = () => {
         <Col xs="12">
           <div className={styles.header}>
             <h1>Quản lý tài liệu Chatbot</h1>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleOpenCreate}>
-              Thêm tài liệu
-            </Button>
+            {hasPermission("chatbot:manage") && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleOpenCreate}>
+                Thêm tài liệu
+              </Button>
+            )}
           </div>
         </Col>
       </Row>
